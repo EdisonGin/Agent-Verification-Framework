@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "config_id": "A1_B1_C1",
+  "memory_backend": "sqlite",
+  "retrieval_strategy": "bm25",
+  "scheduling_policy": "sequential"
+}
+

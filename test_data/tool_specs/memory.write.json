@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "tool_name": "memory.write",
+  "tool_schema_version": "1.0",
+  "description": "Store an episodic memory record.",
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "key",
+      "value"
+    ],
+    "properties": {
+      "key": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      },
+      "metadata": {
+        "type": "object"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "ok",
+      "record_id"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "record_id": {
+        "type": "string"
+      }
+    }
+  },
+  "error_model": {
+    "supports_temporary_unavailability": true,
+    "supports_noisy_observation": false
+  }
+}
+

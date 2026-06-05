@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "task_id": "memory_recall_001",
+  "task_version": "1.0",
+  "name": "Recall Stored Project Preference",
+  "family": "memory",
+  "description": "The agent must store a user preference and later recall it correctly.",
+  "input_state": {
+    "user_preference": "use concise summaries"
+  },
+  "allowed_tools": [
+    "memory.write",
+    "memory.query"
+  ],
+  "success_criteria": {
+    "required_final_answer_contains": [
+      "concise summaries"
+    ],
+    "required_tool_calls": [
+      "memory.write",
+      "memory.query"
+    ]
+  },
+  "progress_model": {
+    "milestones": [
+      "preference_stored",
+      "preference_retrieved",
+      "answer_returned"
+    ]
+  },
+  "max_steps": 8
+}
+

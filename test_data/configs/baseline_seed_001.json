@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "run_config_id": "baseline_seed_001",
+  "model": {
+    "provider": "local_stub",
+    "model_id": "baseline-agent-v1",
+    "temperature": 0.0
+  },
+  "prompt": {
+    "system_prompt_id": "baseline_system_v1",
+    "prompt_version": "1.0"
+  },
+  "seed": 42,
+  "perturbation_schedule_id": "schedule_none_v1",
+  "runtime": {
+    "max_steps": 8,
+    "timeout_seconds": 60
+  },
+  "artifacts": {
+    "trace_dir": "artifacts/traces",
+    "result_dir": "artifacts/results"
+  }
+}
+

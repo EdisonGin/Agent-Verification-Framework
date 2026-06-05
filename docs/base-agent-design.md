@@ -1,0 +1,215 @@
+# SUT Base Agent Design
+
+## Purpose
+
+This document records the planned architecture for the base agent used as the System Under Test (SUT). It is based on `SUT-base-agent-design.png`.
+
+The base agent is the controlled agent implementation evaluated by the automated testing infrastructure. It must be modular enough to support memory, retrieval, and scheduling substitutions, while keeping the model, prompts, task suite, tool schemas, and runtime settings fixed.
+
+## Architectural Role
+
+The base agent sits between the test orchestrator and the mock MCP/tool servers.
+
+```text
+test orchestrator
+  -> base agent / SUT
+  -> MCP client tool layer
+  -> mock MCP/tool servers
+  -> base agent observations
+  -> final answer, trace, artifacts, metrics
+```
+
+The testing framework evaluates this agent by controlling its inputs, environment, component configuration, and execution limits.
+
+## Inputs from Test Orchestrator
+
+The base agent receives:
+
+| Input | Purpose |
+|---|---|
+| Test case | Instructions, goals, expected outcomes, allowed tools |
+| Scenario config | Agent configuration, model, tools, limits |
+| Environment config | Memory, search, and scheduler settings |
+| Mock service config | Tool endpoints, deterministic data, service behaviours |
+| Execution controls | Timeout, max steps, retry policy, logging settings |
+
+These inputs must be versioned and recorded in the run trace.
+
+## Agent Core
+
+The agent core follows a controlled think-plan-act-observe loop.
+
+Core stages:
+
+| Stage | Responsibility |
+|---|---|
+| Perception / input processor | Parse task instructions and initialise context/state |
+| Reasoning module | Decide the next action under the fixed model/prompt configuration |
+| Planner | Create or update a plan/subgoal sequence |
+| Action executor | Execute internal actions or tool calls |
+| Observation processor | Process tool results, update state, and determine next step |
+
+Initial Phase 1 scope:
+
+- deterministic local baseline reasoning,
+- simple plan generation,
+- sequential action execution,
+- observation-to-state update,
+- final answer generation.
+
+The first implementation may use a stubbed or deterministic baseline model so the infrastructure can be validated without external model dependency.
+
+## Pluggable Modules
+
+The base agent has three module families that align with the dissertation's component-level experimental factors.
+
+### Memory Module
+
+Interface:
+
+```text
+read / write / search
+```
+
+Planned implementations:
+
+| Variant | Role |
+|---|---|
+| SQLite structured memory | Dissertation Factor A1 |
+| Vector-backed memory | Dissertation Factor A2 |
+| File-based JSON/YAML memory | Development fallback or later extension |
+| Redis key-value/cache memory | Later extension, not part of initial factorial design |
+
+### Retrieval / Search Module
+
+Interface:
+
+```text
+query / retrieve
+```
+
+Planned implementations:
+
+| Variant | Role |
+|---|---|
+| BM25 keyword search | Dissertation Factor B1 |
+| Semantic embedding search | Dissertation Factor B2 |
+| Hybrid BM25 + semantic search | Later extension |
+| RAG pipeline | Later extension |
+
+### Skill / Tool Scheduling Module
+
+Interface:
+
+```text
+schedule / dispatch
+```
+
+Planned implementations:
+
+| Variant | Role |
+|---|---|
+| Sequential scheduler | Dissertation Factor C1 |
+| Rule-based priority scheduler | Dissertation Factor C2 |
+| DAG-based scheduler | Later extension |
+| Parallel/concurrent scheduler | Later extension |
+
+## Tool / Action Layer
+
+The tool/action layer acts as an MCP-style client.
+
+Responsibilities:
+
+- convert selected actions into tool calls,
+- validate tool arguments,
+- dispatch calls to mock MCP/tool servers,
+- receive structured tool results,
+- pass observations back to the agent core,
+- emit trace events for every action and result.
+
+Planned tools:
+
+| Tool | Phase |
+|---|---|
+| Memory/database tool | Phase 1 |
+| File system tool | Phase 1 or Phase 2 |
+| API-style tool | Phase 2 |
+| GitHub/Slack/Google-style tools | Later coverage expansion |
+
+## Outputs
+
+The base agent produces:
+
+| Output | Purpose |
+|---|---|
+| Final answer | User/test-facing result |
+| Execution trace | Ordered steps, actions, observations, state updates |
+| Artifacts | Files, data, logs, generated outputs |
+| Metrics | Token usage, time, steps, errors where available |
+
+The execution trace is the most important research artifact because it supports verification, trajectory metrics, and failure analysis.
+
+## Telemetry and Audit
+
+The base agent must emit internal telemetry suitable for audit:
+
+- execution log,
+- audit trail,
+- metrics and tracing,
+- error tracking.
+
+These telemetry events should be represented as trace events so that the verification and reporting layers can consume them uniformly.
+
+## Phase 1 Baseline Agent
+
+The Phase 1 baseline agent will implement the smallest useful subset:
+
+```text
+perception
+  -> deterministic reasoning/planning
+  -> sequential action execution
+  -> mock memory tool call
+  -> observation processing
+  -> final answer
+```
+
+Required properties:
+
+- no live external API dependency,
+- deterministic under fixed seed and configuration,
+- complete trace event emission,
+- stable tool-call interface,
+- clear separation between agent core and pluggable modules.
+
+## Phase 2 Expansion
+
+Phase 2 expands the baseline agent into the controlled modular SUT:
+
+- introduce SQLite and vector memory variants through the same memory interface,
+- introduce BM25 and embedding retrieval variants through the same retrieval interface,
+- introduce sequential and rule-based scheduling variants through the same scheduler interface,
+- validate that component swaps do not change task definitions, prompt templates, or tool schemas.
+
+## Out-of-Scope for Initial Dissertation Factorial Design
+
+The SUT diagram includes additional useful variants. These are documented but deferred unless time allows:
+
+- Redis memory,
+- hybrid retrieval,
+- full RAG pipeline,
+- DAG scheduling,
+- parallel/concurrent scheduling,
+- broad GitHub/Slack/Google API coverage.
+
+They may be useful for future work or tool-calling coverage extensions, but they are not required for the core `2^3` experiment.
+
+## Dissertation Use
+
+This document supports the dissertation by explaining:
+
+- what the SUT agent is,
+- how the agent core executes tasks,
+- which modules are controlled experimental factors,
+- why only selected variants are included in the factorial design,
+- how telemetry and traces are generated for verification.
+

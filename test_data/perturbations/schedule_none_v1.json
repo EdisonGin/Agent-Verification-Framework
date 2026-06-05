@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "perturbation_schedule_id": "schedule_none_v1",
+  "perturbation_schedule_version": "1.0",
+  "description": "No perturbations. Used to validate the Phase 1 baseline path.",
+  "events": []
+}
+

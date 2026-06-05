@@ -1,0 +1,516 @@
+# Contracts and Schemas
+
+## Purpose
+
+This document defines the initial contracts and schema decisions for the automated testing infrastructure.
+
+The contracts are the foundation of the system. They define how the orchestration, mock service, verification, and reporting layers exchange data. Stable contracts are necessary for reproducible experiments and for controlled component substitution.
+
+## Design Principles
+
+The schema design follows six principles:
+
+1. Contracts are defined at layer boundaries.
+2. Schemas are implementation-neutral.
+3. Every important artifact is versioned.
+4. Every run is replayable from stored inputs.
+5. Trace events are sufficiently complete for verification and diagnostics.
+6. Component variants share the same external interface.
+
+## Core Schema Set
+
+| Schema | Purpose |
+|---|---|
+| `TaskCase` | Defines a benchmark task, task family, initial state, tool permissions, success criteria, and progress model |
+| `RunConfig` | Defines model, prompt, seed, perturbation schedule, runtime settings, and artifact locations |
+| `ComponentConfig` | Selects memory, retrieval, and scheduling variants |
+| `AgentRunInput` | Bundles the orchestrator inputs passed into the base agent / SUT |
+| `AgentAction` | Represents an internal action or external tool action selected by the base agent |
+| `AgentObservation` | Represents processed feedback returned to the base agent after an action |
+| `AgentOutput` | Represents the final answer, artifacts, trace summary, and agent-side metrics |
+| `ToolSpec` | Defines a mock MCP-style tool name, input schema, output schema, and error model |
+| `ToolCall` | Records one requested tool invocation |
+| `ToolResult` | Records one deterministic mock service response or error |
+| `TraceEvent` | Records an agent step, tool call, observation, state update, error, or recovery action |
+| `RunTrace` | Stores the full trajectory for one task/config/seed/schedule execution |
+| `VerificationResult` | Stores verifier decisions, evidence, and failure reasons |
+| `MetricResult` | Stores outcome and trajectory metrics for one run |
+| `ExperimentResult` | Stores aggregated results for factorial analysis and reporting |
+
+## Versioning
+
+Each persisted artifact should include:
+
+```json
+{
+  "schema_version": "1.0"
+}
+```
+
+Additional version fields are used where appropriate:
+
+```json
+{
+  "task_version": "1.0",
+  "prompt_version": "1.0",
+  "tool_schema_version": "1.0",
+  "perturbation_schedule_version": "1.0"
+}
+```
+
+Versioning protects the experiments from silent drift.
+
+## TaskCase
+
+`TaskCase` defines a fixed benchmark task.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `task_id` | string | Stable task identifier |
+| `task_version` | string | Version of this task definition |
+| `name` | string | Human-readable task name |
+| `family` | enum | `memory`, `retrieval`, or `recovery` |
+| `description` | string | Task description for documentation |
+| `input_state` | object | Initial deterministic task state |
+| `allowed_tools` | list[string] | Tool names available to the agent |
+| `success_criteria` | object | Deterministic criteria used by the verifier |
+| `progress_model` | object | State milestones used for progress and goal-drift metrics |
+| `max_steps` | integer | Maximum agent steps before termination |
+
+Example:
+
+```json
+{
+  "schema_version": "1.0",
+  "task_id": "memory_recall_001",
+  "task_version": "1.0",
+  "name": "Recall Stored Project Preference",
+  "family": "memory",
+  "description": "The agent must store a user preference and later recall it correctly.",
+  "input_state": {
+    "user_preference": "use concise summaries"
+  },
+  "allowed_tools": ["memory.write", "memory.query"],
+  "success_criteria": {
+    "required_final_answer_contains": ["concise summaries"],
+    "required_tool_calls": ["memory.write", "memory.query"]
+  },
+  "progress_model": {
+    "milestones": ["preference_stored", "preference_retrieved", "answer_returned"]
+  },
+  "max_steps": 8
+}
+```
+
+## RunConfig
+
+`RunConfig` defines the fixed runtime context for a run.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_config_id` | string | Stable run config identifier |
+| `model` | object | Fixed model/backbone configuration |
+| `prompt` | object | Prompt and system instruction identifiers |
+| `seed` | integer | Fixed execution seed |
+| `perturbation_schedule_id` | string | Perturbation schedule identifier |
+| `runtime` | object | Decoding and execution limits |
+| `artifacts` | object | Output paths for trace and results |
+
+Example:
+
+```json
+{
+  "schema_version": "1.0",
+  "run_config_id": "baseline_seed_001",
+  "model": {
+    "provider": "local_stub",
+    "model_id": "baseline-agent-v1",
+    "temperature": 0.0
+  },
+  "prompt": {
+    "system_prompt_id": "baseline_system_v1",
+    "prompt_version": "1.0"
+  },
+  "seed": 42,
+  "perturbation_schedule_id": "schedule_none_v1",
+  "runtime": {
+    "max_steps": 8,
+    "timeout_seconds": 60
+  },
+  "artifacts": {
+    "trace_dir": "artifacts/traces",
+    "result_dir": "artifacts/results"
+  }
+}
+```
+
+## ComponentConfig
+
+`ComponentConfig` selects the experimental factor levels.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `config_id` | string | Stable component configuration identifier |
+| `memory_backend` | enum | `sqlite` or `vector` |
+| `retrieval_strategy` | enum | `bm25` or `embedding` |
+| `scheduling_policy` | enum | `sequential` or `rule_based` |
+
+Example:
+
+```json
+{
+  "schema_version": "1.0",
+  "config_id": "A1_B1_C1",
+  "memory_backend": "sqlite",
+  "retrieval_strategy": "bm25",
+  "scheduling_policy": "sequential"
+}
+```
+
+## AgentRunInput
+
+`AgentRunInput` defines the boundary from the orchestrator into the base agent / SUT.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Stable run identifier |
+| `task` | object | Resolved `TaskCase` |
+| `run_config` | object | Resolved `RunConfig` |
+| `component_config` | object | Resolved `ComponentConfig` |
+| `tool_specs` | list[object] | Available tool contracts |
+| `execution_controls` | object | Max steps, timeout, retry, and logging controls |
+
+The base agent must be executable from this input without reading hidden state.
+
+## AgentAction
+
+`AgentAction` represents one action chosen by the base agent.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `action_id` | string | Stable action identifier |
+| `run_id` | string | Parent run identifier |
+| `step_index` | integer | Agent step index |
+| `action_type` | enum | `internal`, `tool_call`, or `final_answer` |
+| `name` | string | Action name |
+| `arguments` | object | Action arguments |
+| `rationale` | string/null | Optional reasoning summary for audit |
+
+## AgentObservation
+
+`AgentObservation` represents feedback after an action.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `observation_id` | string | Stable observation identifier |
+| `run_id` | string | Parent run identifier |
+| `step_index` | integer | Agent step index |
+| `source` | string | Source action, tool, or internal module |
+| `status` | enum | `success`, `error`, or `partial` |
+| `content` | object | Observation payload |
+| `state_delta` | object | State changes inferred from the observation |
+
+## AgentOutput
+
+`AgentOutput` represents the base agent's final response to the orchestrator.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Parent run identifier |
+| `status` | enum | `completed`, `failed`, or `timeout` |
+| `final_answer` | string/null | Final answer produced by the agent |
+| `artifacts` | list[object] | Agent-produced files, data, or logs |
+| `metrics` | object | Agent-side metrics such as steps, tokens, errors, and elapsed time |
+| `trace_event_ids` | list[string] | Trace events produced by the agent |
+
+## ToolSpec
+
+`ToolSpec` defines a mock MCP-style tool contract.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `tool_name` | string | Stable tool name |
+| `tool_schema_version` | string | Tool schema version |
+| `description` | string | Tool purpose |
+| `input_schema` | object | JSON-schema-style input contract |
+| `output_schema` | object | JSON-schema-style output contract |
+| `error_model` | object | Declared errors and perturbation behavior |
+
+Example:
+
+```json
+{
+  "schema_version": "1.0",
+  "tool_name": "memory.write",
+  "tool_schema_version": "1.0",
+  "description": "Store an episodic memory record.",
+  "input_schema": {
+    "type": "object",
+    "required": ["key", "value"],
+    "properties": {
+      "key": {"type": "string"},
+      "value": {"type": "string"},
+      "metadata": {"type": "object"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": ["ok", "record_id"],
+    "properties": {
+      "ok": {"type": "boolean"},
+      "record_id": {"type": "string"}
+    }
+  },
+  "error_model": {
+    "supports_temporary_unavailability": true,
+    "supports_noisy_observation": false
+  }
+}
+```
+
+## ToolCall
+
+`ToolCall` records a requested invocation.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `tool_call_id` | string | Unique call identifier |
+| `run_id` | string | Parent run identifier |
+| `step_index` | integer | Agent step index |
+| `tool_name` | string | Tool being called |
+| `arguments` | object | Tool input arguments |
+| `requested_at` | string | Timestamp |
+
+## ToolResult
+
+`ToolResult` records the mock service response.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `tool_call_id` | string | Associated tool call |
+| `status` | enum | `success`, `error`, or `perturbed` |
+| `output` | object | Tool output payload |
+| `error` | object/null | Error detail if applicable |
+| `latency_ms` | integer | Simulated or measured latency |
+| `perturbation_applied` | object/null | Perturbation metadata |
+
+## TraceEvent
+
+`TraceEvent` is the atomic event type for run logging.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `event_id` | string | Unique event identifier |
+| `run_id` | string | Parent run identifier |
+| `event_type` | enum | `agent_step`, `tool_call`, `tool_result`, `observation`, `state_update`, `error`, `recovery`, `final_answer` |
+| `step_index` | integer | Agent step index |
+| `timestamp` | string | Timestamp |
+| `payload` | object | Event-specific data |
+
+Trace events must be rich enough to support replay, verification, and trajectory metrics.
+
+## RunTrace
+
+`RunTrace` stores a full execution trajectory.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Stable run identifier |
+| `task_id` | string | Task identifier |
+| `run_config_id` | string | Run config identifier |
+| `component_config_id` | string | Component config identifier |
+| `seed` | integer | Execution seed |
+| `perturbation_schedule_id` | string | Perturbation schedule |
+| `started_at` | string | Start timestamp |
+| `completed_at` | string/null | Completion timestamp |
+| `status` | enum | `completed`, `failed`, or `timeout` |
+| `events` | list[TraceEvent] | Ordered event list |
+
+## VerificationResult
+
+`VerificationResult` stores verifier decisions.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Parent run identifier |
+| `verifier_id` | string | Verifier identifier |
+| `verifier_type` | enum | `rule_based`, `llm_judge`, or `consensus` |
+| `passed` | boolean | Overall verifier decision |
+| `score` | number/null | Optional score |
+| `evidence` | list[object] | Trace-backed evidence |
+| `failure_reasons` | list[string] | Human-readable failure reasons |
+
+## MetricResult
+
+`MetricResult` stores outcome and trajectory diagnostics.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Parent run identifier |
+| `task_success` | boolean | Final task success |
+| `latency_ms` | integer | Total run latency |
+| `step_count` | integer | Number of agent steps |
+| `tool_call_count` | integer | Number of tool calls |
+| `goal_drift` | number | Proportion of non-progressing steps |
+| `repetition_rate` | number | Fraction of repeated actions without state change |
+| `recovery_steps` | integer/null | Steps to recover after first failure |
+
+## ExperimentResult
+
+`ExperimentResult` stores aggregated results for analysis.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `experiment_id` | string | Experiment identifier |
+| `factorial_design` | object | Factor levels and configuration IDs |
+| `run_ids` | list[string] | Included runs |
+| `aggregation` | object | Summary statistics |
+| `analysis_artifacts` | object | Paths to reports, tables, and plots |
+
+## Initial Storage Layout
+
+The planned storage layout is:
+
+```text
+test_data/
+  tasks/
+  configs/
+  components/
+  prompts/
+  perturbations/
+  tool_specs/
+
+artifacts/
+  traces/
+  results/
+  reports/
+  audits/
+```
+
+## Phase 1B/1C Implementation
+
+The initial contract implementation is dependency-light:
+
+- schema models are implemented as standard-library dataclasses,
+- persisted fixtures use JSON,
+- validation is implemented in `src/avf/contracts/schemas.py`,
+- fixture loading is implemented in `src/avf/contracts/fixture_loader.py`,
+- fixture validation is available through `python -m avf validate-fixtures`.
+
+## Boundary Contracts
+
+### Inputs to Orchestrator
+
+The orchestrator consumes:
+
+- `TaskCase`,
+- `RunConfig`,
+- `ComponentConfig`,
+- perturbation schedule,
+- tool specifications.
+
+### Orchestrator to Base Agent / SUT
+
+The orchestrator sends:
+
+- `AgentRunInput`.
+
+The base agent returns:
+
+- `AgentOutput`.
+
+During execution, the base agent emits:
+
+- `AgentAction`,
+- `AgentObservation`,
+- `TraceEvent`.
+
+### Orchestrator to Mock Services
+
+The orchestrator sends:
+
+- `ToolCall`,
+- active run context,
+- perturbation context.
+
+Mock services return:
+
+- `ToolResult`.
+
+### Trace Logger to Verification
+
+The trace logger emits:
+
+- `RunTrace`.
+
+The verification layer consumes:
+
+- `RunTrace`,
+- `TaskCase`,
+- `ToolSpec`,
+- success criteria.
+
+### Verification and Metrics to Reporting
+
+The reporting layer consumes:
+
+- `VerificationResult`,
+- `MetricResult`,
+- `RunTrace`,
+- aggregated experiment artifacts.
+
+## Open Questions
+
+The following questions remain open for later Phase 1 subphases:
+
+1. Whether the first mock service should be memory-focused or file/API-focused.
+2. Whether the first report format should be Markdown only or Markdown plus JSON.
+
+## Dissertation Use
+
+This document supports the dissertation by explaining:
+
+- how reproducibility requirements are represented in software contracts,
+- how component isolation is enforced through stable interfaces,
+- how trace logging enables trajectory-level diagnostics,
+- how schema versioning prevents uncontrolled experimental drift.

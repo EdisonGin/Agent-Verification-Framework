@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "tool_name": "memory.query",
+  "tool_schema_version": "1.0",
+  "description": "Query episodic memory records using the shared structured contract.",
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "query"
+    ],
+    "properties": {
+      "query": {
+        "type": "string"
+      },
+      "metadata_filter": {
+        "type": "object"
+      },
+      "limit": {
+        "type": "integer"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "ok",
+      "records"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "records": {
+        "type": "array"
+      }
+    }
+  },
+  "error_model": {
+    "supports_temporary_unavailability": true,
+    "supports_noisy_observation": false
+  }
+}
+

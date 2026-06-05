@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "system_prompt_id": "baseline_system_v1",
+  "prompt_version": "1.0",
+  "description": "Baseline deterministic system instruction used by Phase 1 fixtures.",
+  "content": "Follow the task instructions, use only allowed tools, and produce a concise final answer."
+}
+
