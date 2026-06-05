@@ -155,6 +155,32 @@ Milestone M5: final dissertation submission.
 
 Deliverable D5: final dissertation document and reproducibility artifacts.
 
+## Future Containerisation Plan
+
+The framework starts as a modular Python package in one repository. The source-code boundaries are:
+
+```text
+src/avf/orchestration/
+src/avf/mock_services/
+src/avf/agents/
+src/avf/verification/
+src/avf/metrics/
+src/avf/reporting/
+```
+
+Later Docker deployment should follow these boundaries. The likely containerisation path is:
+
+| Container | Likely contents |
+|---|---|
+| `avf-runner` | orchestration, contracts, tracing, metrics, experiment runner |
+| `sut-agent` | base agent and memory/retrieval/scheduling variants |
+| `mock-*-mcp` | deterministic mock MCP/tool servers |
+| `results-store` | traces, verifier outputs, metrics, reports, mounted artifacts |
+| `dashboard` | reporting UI and failure drill-down views |
+| `verifier` | optional heavier verification or LLM-as-judge service |
+
+Containerisation is therefore a later deployment and reproducibility mechanism. It should not be treated as the initial design boundary during Phase 1.
+
 ## Acceptance Criteria
 
 The system is considered implementation-ready for experimentation only when the following conditions hold:

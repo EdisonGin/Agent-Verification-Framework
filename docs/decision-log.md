@@ -241,6 +241,114 @@ Consequences:
 - The fixture validation CLI validates JSON fixtures.
 - YAML can be revisited later if authoring ergonomics become more important than dependency minimisation.
 
+### DEC-009: Use Modular Source Boundaries Before Multi-Container Deployment
+
+Decision ID: DEC-009
+
+Date: 2026-06-05
+
+Status: accepted
+
+Context:
+
+The framework has multiple architectural layers: orchestration, SUT/base agent, mock services, verification, metrics, reporting, and dashboard. These layers may eventually be deployed as separate Docker containers, but implementing them as separate containers too early would add operational complexity before the contracts and local execution path are validated.
+
+Decision:
+
+Use a single repository and modular Python package structure first. Preserve clear source-code and contract boundaries between layers, then introduce Docker/container deployment later once the local baseline pipeline is stable.
+
+Rationale:
+
+The dissertation requires a reproducible, inspectable implementation. Source-level modularity allows the contracts, tests, fixtures, and execution path to mature before introducing container orchestration. Containerisation should support reproducibility and deployment, not replace the software design boundaries.
+
+Consequences:
+
+- Phase 1D and the rest of the early baseline pipeline remain inside `src/avf/`.
+- Mock services can become separate containers once their tool contracts are stable.
+- The dashboard can become a separate container after reporting artifacts exist.
+- The SUT/base agent may remain in-process initially and move to a separate container if isolation or deployment reproducibility requires it.
+- Future Docker Compose planning should preserve the existing contract boundaries rather than reorganising the source tree around containers.
+
+### DEC-010: Generate Run IDs Deterministically from Controlled Inputs
+
+Decision ID: DEC-010
+
+Date: 2026-06-05
+
+Status: accepted
+
+Context:
+
+Phase 1D introduces a minimal orchestrator that creates a run context before agent execution. The run identifier must support replayability and matched comparisons across task, seed, perturbation schedule, and component configuration cells.
+
+Decision:
+
+Generate `run_id` values deterministically from controlled run inputs rather than using timestamps, random UUIDs, or filesystem paths.
+
+Rationale:
+
+Deterministic run IDs make it easier to confirm that repeated setup from the same task, run configuration, component configuration, and tool schemas refers to the same experimental cell. This supports reproducibility and later rerun tracking.
+
+Consequences:
+
+- `run_id` generation uses task ID/version, run config ID, seed, perturbation schedule, component factor levels, and tool schema versions.
+- Timestamps and local paths are excluded from the run ID payload.
+- A change to controlled inputs intentionally changes the run ID.
+- Later execution phases can attach trace, verification, metric, and report artifacts to the same deterministic run identity.
+
+### DEC-011: Require User Approval Before Phase Commits and Pushes
+
+Decision ID: DEC-011
+
+Date: 2026-06-05
+
+Status: accepted
+
+Context:
+
+Each implementation phase should be reviewed and verified before it is recorded in Git and pushed to the remote GitHub repository.
+
+Decision:
+
+After implementing and testing each phase, pause and ask the user for approval before creating a detailed commit and pushing to the remote repository.
+
+Rationale:
+
+This keeps version-control history aligned with reviewed phase boundaries and gives the user control over when dissertation-relevant milestones are published.
+
+Consequences:
+
+- Phase completion summaries should include verification commands and current working-tree status.
+- Commits should use detailed messages describing scope, implementation decisions, fixtures, tests, and verification results.
+- No phase commit or push should be performed without explicit user approval.
+
+### DEC-012: Push Phase Work to Phase-Specific Branches
+
+Decision ID: DEC-012
+
+Date: 2026-06-05
+
+Status: accepted
+
+Context:
+
+The user wants to manually create pull requests on GitHub after each implementation phase. Pushing phase work directly to `main` would bypass that review workflow.
+
+Decision:
+
+For each implementation phase, create a new branch with a name relevant to that phase, commit the phase work on that branch, and push the branch to the remote repository. The user will manually open the GitHub pull request.
+
+Rationale:
+
+Phase-specific branches make the repository history easier to review and keep phase milestones aligned with pull requests. This also supports dissertation traceability by making each phase implementation a distinct review unit.
+
+Consequences:
+
+- Future phase work should not be pushed directly to `origin/main`.
+- Branch names should be descriptive, for example `phase-1d-minimal-orchestrator`.
+- After implementation and verification, the assistant should ask for approval before creating the branch commit and pushing it.
+- The user remains responsible for opening and merging pull requests on GitHub.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library
