@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -29,7 +30,32 @@ class CliTests(unittest.TestCase):
         self.assertIn("components:", output)
         self.assertIn("tool_specs:", output)
 
+    def test_create_run_context_command(self) -> None:
+        stdout = io.StringIO()
+
+        with contextlib.redirect_stdout(stdout):
+            exit_code = main([
+                "create-run-context",
+                "--task",
+                str(ROOT / "test_data" / "tasks" / "memory_recall_001.json"),
+                "--config",
+                str(ROOT / "test_data" / "configs" / "baseline_seed_001.json"),
+                "--components",
+                str(ROOT / "test_data" / "components" / "A1_B1_C1.json"),
+                "--tool-spec",
+                str(ROOT / "test_data" / "tool_specs" / "memory.write.json"),
+                "--tool-spec",
+                str(ROOT / "test_data" / "tool_specs" / "memory.query.json"),
+            ])
+
+        self.assertEqual(exit_code, 0)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["status"], "created")
+        self.assertEqual(payload["seed"], 42)
+        self.assertEqual(payload["task"]["task_id"], "memory_recall_001")
+        self.assertEqual(payload["component_config"]["config_id"], "A1_B1_C1")
+        self.assertTrue(payload["run_id"].startswith("run_"))
+
 
 if __name__ == "__main__":
     unittest.main()
-

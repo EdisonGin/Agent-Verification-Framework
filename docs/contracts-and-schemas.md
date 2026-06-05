@@ -24,6 +24,7 @@ The schema design follows six principles:
 | `TaskCase` | Defines a benchmark task, task family, initial state, tool permissions, success criteria, and progress model |
 | `RunConfig` | Defines model, prompt, seed, perturbation schedule, runtime settings, and artifact locations |
 | `ComponentConfig` | Selects memory, retrieval, and scheduling variants |
+| `RunContext` | Stores the validated orchestration context created from task, run, component, and tool fixtures |
 | `AgentRunInput` | Bundles the orchestrator inputs passed into the base agent / SUT |
 | `AgentAction` | Represents an internal action or external tool action selected by the base agent |
 | `AgentObservation` | Represents processed feedback returned to the base agent after an action |
@@ -175,6 +176,36 @@ Example:
   "scheduling_policy": "sequential"
 }
 ```
+
+## RunContext
+
+`RunContext` is created by the Phase 1D orchestrator. It is the validated execution context for one task/config/component/tool-schema cell.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Deterministic run identifier |
+| `status` | enum | Current orchestration status, initially `created` |
+| `task` | object | Resolved `TaskCase` |
+| `run_config` | object | Resolved `RunConfig` |
+| `component_config` | object | Resolved `ComponentConfig` |
+| `tool_specs` | list[object] | Resolved `ToolSpec` entries available to the task |
+| `seed` | integer | Fixed execution seed copied from `RunConfig` |
+| `perturbation_schedule_id` | string | Fixed perturbation schedule ID copied from `RunConfig` |
+| `execution_controls` | object | Runtime controls used by later execution phases |
+
+The deterministic `run_id` is derived from controlled inputs only:
+
+- task ID and task version,
+- run config ID,
+- seed,
+- perturbation schedule ID,
+- component configuration ID and factor levels,
+- tool names and tool schema versions.
+
+It intentionally excludes timestamps and filesystem paths.
 
 ## AgentRunInput
 
@@ -437,6 +468,17 @@ The initial contract implementation is dependency-light:
 - fixture loading is implemented in `src/avf/contracts/fixture_loader.py`,
 - fixture validation is available through `python -m avf validate-fixtures`.
 
+## Phase 1D Implementation
+
+The initial orchestrator implementation creates `RunContext` values:
+
+- fixture-specific loaders are implemented in `src/avf/orchestration/loaders.py`,
+- deterministic run ID generation is implemented in `src/avf/orchestration/run_context.py`,
+- an execution-engine shell is implemented in `src/avf/orchestration/execution_engine.py`,
+- CLI context creation is available through `python -m avf create-run-context`.
+
+Phase 1D does not execute the SUT or mock services.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator
@@ -448,6 +490,10 @@ The orchestrator consumes:
 - `ComponentConfig`,
 - perturbation schedule,
 - tool specifications.
+
+The orchestrator produces:
+
+- `RunContext`.
 
 ### Orchestrator to Base Agent / SUT
 

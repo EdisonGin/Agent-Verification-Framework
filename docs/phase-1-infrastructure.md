@@ -20,6 +20,8 @@ Deliverable D1:
 
 Containerisation may be introduced after the local baseline pipeline is working. The immediate priority is a deterministic local implementation with stable contracts.
 
+Future containerisation is still a project requirement. The early implementation will preserve clear package boundaries so that orchestration, SUT/base agent, mock services, verification, results storage, and dashboard components can be moved into Docker containers later without changing the core contracts.
+
 ## Subphase Breakdown
 
 ### Phase 1A: Documentation Baseline
@@ -131,6 +133,8 @@ env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
 
 ### Phase 1D: Minimal Orchestrator
 
+Status: complete.
+
 Outputs:
 
 - test case loader,
@@ -145,6 +149,24 @@ Acceptance criteria:
 - orchestrator creates a run context,
 - orchestrator executes a baseline run,
 - run status is recorded.
+
+Implemented outputs:
+
+- fixture loaders in `src/avf/orchestration/loaders.py`,
+- deterministic run-context builder in `src/avf/orchestration/run_context.py`,
+- execution-engine shell in `src/avf/orchestration/execution_engine.py`,
+- CLI command through `python -m avf create-run-context`,
+- tests in `tests/test_orchestration.py`.
+
+Phase 1D records a `created` run status only. It does not execute the SUT agent, mock services, verification, metrics, or reporting. Those are handled by later Phase 1 subphases.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json
+```
 
 ### Phase 1E: Baseline SUT Agent
 
@@ -303,3 +325,24 @@ Phase 1 is complete when:
 - trace, verification, metric, and report artifacts are generated,
 - all Phase 1 tests pass,
 - implementation decisions are recorded in the decision log.
+
+## Phase Commit Protocol
+
+After each subphase is implemented and tested, the implementation should pause before committing. The user must approve the detailed commit message and push to the remote GitHub repository.
+
+Phase implementation work should be committed on a phase-specific branch rather than directly on `main`. The user will manually create the GitHub pull request.
+
+Each phase-completion commit should include:
+
+- the implemented subphase scope,
+- changed source modules,
+- changed fixtures or artifacts,
+- documentation updates,
+- test and CLI verification commands,
+- any implementation decisions added to the decision log.
+
+Example branch names:
+
+- `phase-1d-minimal-orchestrator`
+- `phase-1e-baseline-sut-agent`
+- `phase-1f-minimal-mock-service`
