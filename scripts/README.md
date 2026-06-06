@@ -70,3 +70,10 @@ env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase1i PYTHONPATH=src ./scripts/run-phas
 ```
 
 Later phases will add component-variant execution and experiment scripts.
+
+Phase 2A validates storage abstractions and component registry resolution through the unit test suite and import check:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -c "from avf.storage import FileSystemTestDataRepository, FileSystemResultsStore; from avf.agents.components import build_component_bundle; print('phase2a imports ok')"
+```

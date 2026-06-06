@@ -3,7 +3,6 @@
 from .execution_engine import ExecutionEngine
 from .loaders import load_component_config, load_run_config, load_task_case, load_tool_spec
 from .run_context import RunContext, build_run_context, build_run_context_from_files, deterministic_run_id
-from .baseline_run import BaselineRunArtifactPaths, BaselineRunResult, run_phase1_baseline
 
 __all__ = [
     "BaselineRunArtifactPaths",
@@ -19,3 +18,11 @@ __all__ = [
     "load_tool_spec",
     "run_phase1_baseline",
 ]
+
+
+def __getattr__(name: str) -> object:
+    if name in {"BaselineRunArtifactPaths", "BaselineRunResult", "run_phase1_baseline"}:
+        from . import baseline_run
+
+        return getattr(baseline_run, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

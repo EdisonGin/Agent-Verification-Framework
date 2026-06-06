@@ -90,6 +90,10 @@ Phase 1I completes the first local thin slice by producing trace, verification, 
 
 Goal: implement interchangeable memory, retrieval, and scheduling components while keeping their interfaces fixed.
 
+Detailed planning for this phase is maintained in `phase-2-infrastructure.md`.
+
+Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a database dependency; SQLite is still scheduled first as a SUT memory backend in Phase 2B.
+
 Required factors:
 
 | Factor | Level 1 | Level 2 |

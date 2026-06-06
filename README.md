@@ -16,11 +16,12 @@ Implemented:
 - Phase 1F: deterministic mock memory service,
 - Phase 1G: deterministic trace logging and trace artifact validation,
 - Phase 1H: deterministic rule-based verification,
-- Phase 1I: first reproducible baseline run with trace, verification, metrics, and Markdown report artifacts.
+- Phase 1I: first reproducible baseline run with trace, verification, metrics, and Markdown report artifacts,
+- Phase 2A: filesystem storage abstractions and component registry/factory.
 
 Next planned phase:
 
-- Phase 2: modular component integration.
+- Phase 2B: SQLite episodic memory backend.
 
 ## Documentation
 
@@ -32,6 +33,7 @@ Start with:
 - `docs/base-agent-design.md`
 - `docs/contracts-and-schemas.md`
 - `docs/phase-1-infrastructure.md`
+- `docs/phase-2-infrastructure.md`
 - `docs/decision-log.md`
 
 Source architecture diagrams:

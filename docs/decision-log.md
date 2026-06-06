@@ -536,6 +536,61 @@ Consequences:
 - Metrics are deterministic and avoid wall-clock timing in Phase 1.
 - More sophisticated metrics, report formats, and dashboards remain later extensions.
 
+### DEC-020: Introduce Storage Abstractions Before Database-Backed Stores
+
+Decision ID: DEC-020
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 2 begins modular component integration. The architecture includes a test data repository and results store, but Phase 1 implemented both as filesystem directories. The project also needs a SQLite memory backend as part of the SUT memory factor, which should not be confused with the experiment results store.
+
+Decision:
+
+Introduce filesystem-backed repository/store abstractions in Phase 2A and defer database-backed results storage. Implement SQLite first as a SUT memory backend in Phase 2B.
+
+Rationale:
+
+The current JSON and Markdown artifacts are reproducible, inspectable, and sufficient for early component integration. Adding a results database before experiment volume requires it would add complexity without improving component attribution. By contrast, SQLite memory is part of the experimental factor design and should be implemented as SUT behavior.
+
+Consequences:
+
+- `FileSystemTestDataRepository` formalises the current `test_data/` fixture repository.
+- `FileSystemResultsStore` formalises the current `artifacts/` result store.
+- The results store remains artifact-first.
+- SQLite is introduced later as a memory component, not as a replacement for result artifacts.
+- A results index database can be revisited in Phase 3 if experiment scale or dashboard requirements justify it.
+
+### DEC-021: Use Explicit Deferred Component Descriptors in Phase 2A
+
+Decision ID: DEC-021
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 2A needs `ComponentConfig` to resolve through a component registry, but the real SQLite memory and BM25 retrieval implementations are scheduled for later subphases. The existing `A1_B1_C1` fixture must remain executable without pretending that all component variants already exist.
+
+Decision:
+
+Resolve the current `A1_B1_C1` cell through explicit component descriptors. Mark SQLite memory and BM25 retrieval as deferred, mark sequential scheduling as available, and reject unimplemented vector, embedding, and rule-based variants with explicit validation errors.
+
+Rationale:
+
+This creates the component-selection boundary without silently falling back for unsupported variants. It keeps the Phase 1 baseline running while preserving dissertation clarity about which component implementations exist.
+
+Consequences:
+
+- `ComponentRegistry` resolves the current baseline cell deterministically.
+- Deferred descriptors document the planned implementation phase for memory and retrieval.
+- Unsupported variants fail clearly.
+- Later Phase 2 subphases can replace deferred descriptors with concrete implementations without changing `ComponentConfig`.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

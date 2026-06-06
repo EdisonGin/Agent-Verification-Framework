@@ -552,6 +552,27 @@ The Phase 1I metric calculator is intentionally minimal and deterministic:
 
 The baseline run can be executed through `python -m avf run-baseline` or `scripts/run-phase1-baseline.sh`.
 
+## Phase 2A Implementation
+
+Phase 2A adds implementation-level contracts around storage and component selection while preserving the existing persisted schema set.
+
+New boundary abstractions:
+
+- `FileSystemTestDataRepository` loads versioned fixtures from `test_data/`,
+- `FileSystemResultsStore` writes traces, verification results, metric results, and Markdown reports under artifact directories,
+- `ComponentRegistry` resolves `ComponentConfig` values into a `ComponentBundle`,
+- `ComponentFactory` provides a stable construction facade for future SUT component wiring.
+
+The current `A1_B1_C1` cell resolves as:
+
+| Family | Variant | Phase 2A status | Concrete implementation phase |
+|---|---|---|---|
+| Memory | `sqlite` | deferred descriptor | Phase 2B |
+| Retrieval | `bm25` | deferred descriptor | Phase 2C |
+| Scheduling | `sequential` | available | Phase 1E |
+
+This keeps the current baseline executable while making it explicit that SQLite memory and BM25 retrieval are not yet implemented as real component variants.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

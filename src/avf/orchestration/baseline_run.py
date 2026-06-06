@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from avf.agents import BaselineSUTAgent
+from avf.agents.components import ComponentBundle, build_component_bundle
 from avf.contracts import MetricResult, RunTrace, VerificationResult
-from avf.metrics import MetricResultWriter, calculate_metric_result
+from avf.metrics import calculate_metric_result
 from avf.mock_services import MockMemoryService
-from avf.reporting import MarkdownReportWriter, build_run_report
-from avf.tracing import TraceWriter, build_run_trace_from_agent_result
-from avf.verification import RuleBasedVerifier, VerificationResultWriter
+from avf.reporting.markdown import build_run_report
+from avf.storage import FileSystemResultsStore
+from avf.tracing import build_run_trace_from_agent_result
+from avf.verification import RuleBasedVerifier
 
 from .run_context import RunContext, build_run_context_from_files
 
@@ -35,6 +37,7 @@ class BaselineRunResult:
     """In-memory and persisted outputs from one baseline run."""
 
     run_context: RunContext
+    component_bundle: ComponentBundle
     trace: RunTrace
     verification: VerificationResult
     metrics: MetricResult
@@ -45,6 +48,7 @@ class BaselineRunResult:
             "run_id": self.trace.run_id,
             "status": self.trace.status,
             "task_success": self.metrics.task_success,
+            "component_bundle": self.component_bundle.to_dict(),
             "trace": self.trace.to_dict(),
             "verification": self.verification.to_dict(),
             "metrics": self.metrics.to_dict(),
@@ -67,34 +71,36 @@ def run_phase1_baseline(
         component_config_path=component_config_path,
         tool_spec_paths=tool_spec_paths,
     )
-    layout = _artifact_layout(run_context, artifact_root)
+    component_bundle = build_component_bundle(run_context.component_config)
+    results_store = FileSystemResultsStore.from_run_config(run_context.run_config, artifact_root)
 
     agent_result = BaselineSUTAgent().run(run_context.to_agent_run_input(), MockMemoryService())
     trace = build_run_trace_from_agent_result(run_context, agent_result)
     verification = RuleBasedVerifier().verify(run_context.task, trace)
     metrics = calculate_metric_result(trace, verification)
 
-    trace_path = TraceWriter(layout["trace_dir"]).write(trace)
-    verification_path = VerificationResultWriter(layout["result_dir"]).write(verification)
-    metrics_path = MetricResultWriter(layout["result_dir"]).write(metrics)
+    trace_path = results_store.write_trace(trace)
+    verification_path = results_store.write_verification_result(verification)
+    metrics_path = results_store.write_metric_result(metrics)
 
     artifact_paths = BaselineRunArtifactPaths(
         trace=trace_path,
         verification=verification_path,
         metrics=metrics_path,
-        report=layout["report_dir"] / f"{trace.run_id}.md",
+        report=results_store.report_path(trace.run_id),
     )
     report = build_run_report(
         task=run_context.task,
         trace=trace,
         verification=verification,
         metrics=metrics,
-        artifact_paths=_relative_artifact_paths(artifact_paths, layout["artifact_root"]),
+        artifact_paths=results_store.relative_paths(asdict(artifact_paths)),
     )
-    report_path = MarkdownReportWriter(layout["report_dir"]).write(trace.run_id, report, artifact_paths.report)
+    report_path = results_store.write_report(trace.run_id, report)
 
     return BaselineRunResult(
         run_context=run_context,
+        component_bundle=component_bundle,
         trace=trace,
         verification=verification,
         metrics=metrics,
@@ -105,48 +111,3 @@ def run_phase1_baseline(
             report=report_path,
         ),
     )
-
-
-def _artifact_layout(run_context: RunContext, artifact_root: Optional[Path]) -> Dict[str, Path]:
-    if artifact_root is not None:
-        root = Path(artifact_root)
-        return {
-            "artifact_root": root,
-            "trace_dir": root / "traces",
-            "result_dir": root / "results",
-            "report_dir": root / "reports",
-        }
-
-    trace_dir = Path(str(run_context.run_config.artifacts.get("trace_dir", "artifacts/traces")))
-    result_dir = Path(str(run_context.run_config.artifacts.get("result_dir", "artifacts/results")))
-    report_dir = Path(str(run_context.run_config.artifacts.get("report_dir", "artifacts/reports")))
-    artifact_root = _common_artifact_root(trace_dir, result_dir, report_dir)
-    return {
-        "artifact_root": artifact_root,
-        "trace_dir": trace_dir,
-        "result_dir": result_dir,
-        "report_dir": report_dir,
-    }
-
-
-def _relative_artifact_paths(paths: BaselineRunArtifactPaths, artifact_root: Path) -> Dict[str, str]:
-    values: Dict[str, str] = {}
-    for name, path in asdict(paths).items():
-        try:
-            values[name] = str(Path(path).relative_to(artifact_root))
-        except ValueError:
-            values[name] = str(path)
-    return values
-
-
-def _common_artifact_root(*paths: Path) -> Path:
-    parts = [path.parts for path in paths if path.parts]
-    if not parts:
-        return Path(".")
-    shared: List[str] = []
-    for index, part in enumerate(parts[0]):
-        if all(len(candidate) > index and candidate[index] == part for candidate in parts):
-            shared.append(part)
-        else:
-            break
-    return Path(*shared) if shared else Path(".")
