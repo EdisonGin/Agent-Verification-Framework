@@ -502,6 +502,18 @@ The first concrete mock service implements the `ToolClient` protocol and consume
 
 The mock service returns documented `ToolResult` values and can be injected into the Phase 1E baseline SUT agent.
 
+## Phase 1G Implementation
+
+Trace logging now assembles agent-emitted `TraceEvent` values into a persisted `RunTrace` artifact:
+
+- `build_run_trace` copies run metadata from `RunContext` and preserves emitted event ordering,
+- `build_run_trace_from_agent_result` validates that `AgentOutput.trace_event_ids` matches the emitted trace events,
+- `validate_run_trace` rejects empty traces, mismatched run IDs, duplicate event IDs, and completed traces without a `final_answer` event,
+- `TraceWriter` writes validated traces as deterministic JSON files under the configured trace directory,
+- `TraceReader` loads persisted JSON traces back into `RunTrace` contracts for later verification.
+
+The Phase 1G trace artifact is intentionally file-based. It records the contract required by the verifier without introducing Kafka, Flink, or another streaming backend before the local baseline pipeline is complete.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator
@@ -570,10 +582,9 @@ The reporting layer consumes:
 
 ## Open Questions
 
-The following questions remain open for later Phase 1 subphases:
+The following question remains open for later Phase 1 subphases:
 
-1. Whether the first mock service should be memory-focused or file/API-focused.
-2. Whether the first report format should be Markdown only or Markdown plus JSON.
+1. Whether the first report format should be Markdown only or Markdown plus JSON.
 
 ## Dissertation Use
 

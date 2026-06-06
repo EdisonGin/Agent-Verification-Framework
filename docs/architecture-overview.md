@@ -127,6 +127,27 @@ Phase 1F implementation:
 - the service implements the SUT `ToolClient` protocol,
 - perturbation support is represented by no-op and static perturbation controllers.
 
+## Trace Logging Boundary
+
+Trace logging is the artifact boundary between execution and verification.
+
+Responsibilities:
+
+- assemble ordered agent-emitted `TraceEvent` values,
+- preserve run metadata from the orchestration `RunContext`,
+- validate trace completeness before verification,
+- persist deterministic JSON `RunTrace` artifacts,
+- reload trace artifacts for verifier, metrics, and reporting stages.
+
+Phase 1G implementation:
+
+- trace construction is implemented in `src/avf/tracing/builder.py`,
+- trace validation is implemented in `src/avf/tracing/validation.py`,
+- trace persistence is implemented in `src/avf/tracing/writer.py`,
+- trace loading is implemented in `src/avf/tracing/reader.py`.
+
+The initial trace pipeline does not use Kafka, Flink, or streaming infrastructure. Local JSON artifacts are more appropriate for the dissertation baseline because they are deterministic, inspectable, easy to archive, and sufficient for the first verifier and report. Streaming infrastructure remains a future scalability option, not a Phase 1 requirement.
+
 ## Layer 3: Verification Layer
 
 The verification layer judges whether a run satisfied task requirements and computes evidence-backed diagnostic results.

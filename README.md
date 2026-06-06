@@ -13,11 +13,12 @@ Implemented:
 - Phase 1C: initial contract/schema models, JSON fixtures, validation CLI, and tests,
 - Phase 1D: minimal orchestrator and deterministic run-context creation,
 - Phase 1E: deterministic baseline SUT agent core,
-- Phase 1F: deterministic mock memory service.
+- Phase 1F: deterministic mock memory service,
+- Phase 1G: deterministic trace logging and trace artifact validation.
 
 Next planned phase:
 
-- Phase 1G: trace logging.
+- Phase 1H: rule-based verification.
 
 ## Documentation
 
