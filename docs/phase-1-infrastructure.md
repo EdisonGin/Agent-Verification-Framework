@@ -215,6 +215,8 @@ env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memo
 
 ### Phase 1F: Minimal Mock Service
 
+Status: complete.
+
 Outputs:
 
 - one mock service,
@@ -228,6 +230,27 @@ Acceptance criteria:
 - mock service returns a `ToolResult`,
 - invalid inputs produce structured errors,
 - tool behavior is deterministic under fixed inputs.
+
+Implemented outputs:
+
+- deterministic mock memory service in `src/avf/mock_services/memory_service.py`,
+- `memory.write` endpoint,
+- `memory.query` endpoint,
+- structured error responses for unsupported tools and invalid arguments,
+- no-op perturbation controller,
+- static deterministic perturbation hook for later schedule integration,
+- tests in `tests/test_mock_services.py`.
+
+The mock service implements the same `ToolClient` protocol consumed by the Phase 1E baseline SUT agent. This validates the SUT-to-mock-service boundary without introducing network or container orchestration yet.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json
+env PYTHONPATH=src python3 -c "from avf.mock_services import MockMemoryService, StaticPerturbationController; print('mock services import ok')"
+```
 
 ### Phase 1G: Trace Logging
 

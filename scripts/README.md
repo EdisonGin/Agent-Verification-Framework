@@ -21,4 +21,11 @@ Phase 1E validates the baseline SUT agent through the unit test suite:
 python3 -m unittest discover -s tests
 ```
 
+Phase 1F validates the mock memory service through the unit test suite and import check:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -c "from avf.mock_services import MockMemoryService, StaticPerturbationController; print('mock services import ok')"
+```
+
 Later phases will add baseline run, verification, and experiment execution scripts.

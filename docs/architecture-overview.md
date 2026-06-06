@@ -120,6 +120,13 @@ Initial Phase 1 scope:
 
 The SUT accesses mock services through its MCP-style tool/action layer. The mock services therefore validate both the external tool interface and the SUT's action-execution path.
 
+Phase 1F implementation:
+
+- the first mock service is `MockMemoryService`,
+- implemented tools are `memory.write` and `memory.query`,
+- the service implements the SUT `ToolClient` protocol,
+- perturbation support is represented by no-op and static perturbation controllers.
+
 ## Layer 3: Verification Layer
 
 The verification layer judges whether a run satisfied task requirements and computes evidence-backed diagnostic results.
