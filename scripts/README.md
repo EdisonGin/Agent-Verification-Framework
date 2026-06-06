@@ -28,4 +28,11 @@ python3 -m unittest discover -s tests
 env PYTHONPATH=src python3 -c "from avf.mock_services import MockMemoryService, StaticPerturbationController; print('mock services import ok')"
 ```
 
+Phase 1G validates trace logging through the unit test suite and import check:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -c "from avf.tracing import TraceWriter, TraceReader, build_run_trace; print('tracing imports ok')"
+```
+
 Later phases will add baseline run, verification, and experiment execution scripts.

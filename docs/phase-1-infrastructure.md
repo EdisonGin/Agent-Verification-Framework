@@ -254,6 +254,8 @@ env PYTHONPATH=src python3 -c "from avf.mock_services import MockMemoryService, 
 
 ### Phase 1G: Trace Logging
 
+Status: complete.
+
 Outputs:
 
 - trace event writer,
@@ -268,6 +270,26 @@ Acceptance criteria:
 - tool results are logged,
 - final answer is logged,
 - trace can be consumed by verifier.
+
+Implemented outputs:
+
+- run-trace builder in `src/avf/tracing/builder.py`,
+- trace validation in `src/avf/tracing/validation.py`,
+- deterministic JSON trace writer in `src/avf/tracing/writer.py`,
+- trace artifact reader in `src/avf/tracing/reader.py`,
+- exported tracing API in `src/avf/tracing/__init__.py`,
+- trace logging tests in `tests/test_tracing.py`.
+
+Phase 1G stores traces as local JSON `RunTrace` artifacts. Kafka, Flink, and other streaming infrastructure are intentionally deferred because the Phase 1 requirement is deterministic, inspectable, file-based trace capture for one baseline run. Streaming telemetry may be revisited only after the local baseline pipeline, verifier, metrics, and reporting artifacts are stable.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json
+env PYTHONPATH=src python3 -c "from avf.tracing import TraceWriter, TraceReader, build_run_trace; print('tracing imports ok')"
+```
 
 ### Phase 1H: Rule-Based Verification
 
@@ -395,3 +417,4 @@ Example branch names:
 - `phase-1d-minimal-orchestrator`
 - `phase-1e-baseline-sut-agent`
 - `phase-1f-minimal-mock-service`
+- `phase-1g-trace-logging`

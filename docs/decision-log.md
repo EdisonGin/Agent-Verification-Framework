@@ -454,6 +454,33 @@ Consequences:
 - `StaticPerturbationController` validates that service results can be deterministically perturbed.
 - Later schedule replay can build on the same hook without changing the `ToolClient` boundary.
 
+### DEC-017: Use Local JSON Trace Artifacts for Phase 1G
+
+Decision ID: DEC-017
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 1G introduces trace logging. A possible alternative would be to introduce Kafka, Flink, or another streaming/event-processing stack immediately. However, the current baseline still needs deterministic local verification, metrics, and reporting before scaling to distributed execution.
+
+Decision:
+
+Implement Phase 1G as a local JSON trace artifact pipeline using the existing `RunTrace` and `TraceEvent` contracts. Defer Kafka, Flink, and streaming telemetry infrastructure.
+
+Rationale:
+
+The dissertation baseline requires replayable, inspectable, and versioned trace evidence. Local JSON artifacts satisfy the current verifier and reporting needs with less operational complexity and fewer sources of non-determinism. Streaming infrastructure would be premature before the local end-to-end pipeline is validated.
+
+Consequences:
+
+- `RunTrace` artifacts are persisted as deterministic JSON files under the configured trace directory.
+- Trace validation happens before writing artifacts and after reading artifacts.
+- Verification, metrics, and reporting can consume the same persisted trace contract.
+- Kafka, Flink, or similar infrastructure may be revisited later for large-scale runs, dashboards, or live monitoring, but they are not part of Phase 1G.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

@@ -197,6 +197,13 @@ Phase 1F implementation:
 - structured errors are returned through `ToolResult`,
 - a perturbation hook exists for later fixed perturbation schedules.
 
+Phase 1G implementation:
+
+- agent-emitted `TraceEvent` values are assembled into a complete `RunTrace`,
+- the trace logger validates event order, run ID consistency, unique event IDs, and final-answer presence for completed runs,
+- trace artifacts are written as deterministic local JSON files for verification and reporting,
+- streaming telemetry infrastructure is deferred until the local reproducible baseline is complete.
+
 ## Phase 2 Expansion
 
 Phase 2 expands the baseline agent into the controlled modular SUT:
