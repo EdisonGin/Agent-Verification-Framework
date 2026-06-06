@@ -13,6 +13,7 @@ The documents are structured to support both implementation and dissertation wri
 | `base-agent-design.md` | System Under Test base-agent architecture and pluggable module plan |
 | `contracts-and-schemas.md` | Initial schema and interface contracts between layers |
 | `phase-1-infrastructure.md` | Detailed Phase 1 execution plan and acceptance criteria |
+| `phase-2-infrastructure.md` | Detailed Phase 2 modular component and storage plan |
 | `decision-log.md` | Record of major design and methodology decisions |
 
 ## Source Materials
@@ -30,7 +31,8 @@ The documents are structured to support both implementation and dissertation wri
 3. `base-agent-design.md`
 4. `contracts-and-schemas.md`
 5. `phase-1-infrastructure.md`
-6. `decision-log.md`
+6. `phase-2-infrastructure.md`
+7. `decision-log.md`
 
 ## Dissertation Use
 

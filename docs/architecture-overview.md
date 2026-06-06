@@ -246,6 +246,23 @@ The architecture is intended to guarantee:
 - component-level substitution without unrelated changes,
 - analysis based on matched experimental cells.
 
+## Phase 2A Storage and Component Registry
+
+Phase 2A formalises two architecture boundaries that were implicit in Phase 1:
+
+- the test data repository is represented by `FileSystemTestDataRepository`,
+- the results store is represented by `FileSystemResultsStore`.
+
+Both remain filesystem-backed. This preserves the Phase 1 artifact-first design while creating a cleaner boundary for later storage changes.
+
+Phase 2A also introduces the SUT component registry and factory:
+
+- `ComponentConfig` is resolved through `ComponentRegistry`,
+- the existing `A1_B1_C1` cell resolves deterministically,
+- sequential scheduling is available as the current concrete scheduler,
+- SQLite memory and BM25 retrieval are recorded as deferred descriptors until their real implementations are added,
+- unsupported variants fail explicitly rather than silently falling back to baseline behavior.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:
