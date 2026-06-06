@@ -479,6 +479,17 @@ The initial orchestrator implementation creates `RunContext` values:
 
 Phase 1D does not execute the SUT or mock services.
 
+## Phase 1E Implementation
+
+The baseline SUT agent consumes `AgentRunInput` and returns an agent-side result containing:
+
+- `AgentOutput`,
+- emitted `AgentAction` values,
+- emitted `AgentObservation` values,
+- deterministic `TraceEvent` values.
+
+The baseline SUT agent is implemented in `src/avf/agents/core/`. It dispatches tool calls through the `ToolClient` protocol in `src/avf/agents/tools/client.py`. Concrete mock service behavior is intentionally deferred to Phase 1F.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

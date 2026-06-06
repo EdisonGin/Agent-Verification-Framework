@@ -1,2 +1,5 @@
-"""Agent memory module package placeholder."""
+"""Agent memory module interfaces."""
 
+from .interface import MemoryModule
+
+__all__ = ["MemoryModule"]

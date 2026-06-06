@@ -10,11 +10,13 @@ Implemented:
 
 - Phase 1A: documentation baseline,
 - Phase 1B: Python project scaffold,
-- Phase 1C: initial contract/schema models, JSON fixtures, validation CLI, and tests.
+- Phase 1C: initial contract/schema models, JSON fixtures, validation CLI, and tests,
+- Phase 1D: minimal orchestrator and deterministic run-context creation,
+- Phase 1E: deterministic baseline SUT agent core.
 
 Next planned phase:
 
-- Phase 1D: minimal orchestrator.
+- Phase 1F: minimal mock service.
 
 ## Documentation
 
@@ -62,4 +64,3 @@ src/avf/
 ```
 
 The current implementation intentionally uses standard-library dataclasses and JSON fixtures to keep the initial scaffold dependency-light and reproducible.
-

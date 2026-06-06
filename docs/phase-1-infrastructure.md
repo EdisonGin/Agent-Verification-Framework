@@ -170,6 +170,8 @@ env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memo
 
 ### Phase 1E: Baseline SUT Agent
 
+Status: complete.
+
 Outputs:
 
 - perception/input processor,
@@ -186,6 +188,30 @@ Acceptance criteria:
 - base agent emits trace events for internal steps,
 - base agent can call the minimal mock service through a tool interface,
 - base agent returns a final answer and structured outputs.
+
+Implemented outputs:
+
+- deterministic baseline SUT agent in `src/avf/agents/core/baseline_agent.py`,
+- perception/input processing in `src/avf/agents/core/perception.py`,
+- deterministic planning in `src/avf/agents/core/planner.py`,
+- action execution in `src/avf/agents/core/action_executor.py`,
+- observation processing in `src/avf/agents/core/observation_processor.py`,
+- deterministic trace-event construction in `src/avf/agents/core/trace.py`,
+- agent state model in `src/avf/agents/core/state.py`,
+- MCP-style `ToolClient` protocol in `src/avf/agents/tools/client.py`,
+- stable memory, retrieval, and scheduling module interfaces,
+- sequential scheduler implementation for the baseline agent,
+- tests in `tests/test_baseline_agent.py`.
+
+Phase 1E uses an injected tool-client interface. The tests provide an in-memory tool-client double to validate the SUT tool boundary. Concrete mock service implementation remains Phase 1F.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json
+```
 
 ### Phase 1F: Minimal Mock Service
 

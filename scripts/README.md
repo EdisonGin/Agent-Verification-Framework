@@ -15,4 +15,10 @@ Phase 1D adds deterministic run-context creation:
 env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json
 ```
 
+Phase 1E validates the baseline SUT agent through the unit test suite:
+
+```text
+python3 -m unittest discover -s tests
+```
+
 Later phases will add baseline run, verification, and experiment execution scripts.

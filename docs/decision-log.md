@@ -349,6 +349,58 @@ Consequences:
 - After implementation and verification, the assistant should ask for approval before creating the branch commit and pushing it.
 - The user remains responsible for opening and merging pull requests on GitHub.
 
+### DEC-013: Use Deterministic Baseline Reasoning for Phase 1E
+
+Decision ID: DEC-013
+
+Date: 2026-06-05
+
+Status: accepted
+
+Context:
+
+Phase 1E needs a baseline SUT agent to validate the agent boundary, tool dispatch path, trace event emission, and final answer output. Calling a live or hosted LLM at this stage would introduce external dependency and non-determinism before mock services, verification, and reporting are implemented.
+
+Decision:
+
+Implement Phase 1E with deterministic local baseline reasoning and planning.
+
+Rationale:
+
+The goal of Phase 1E is infrastructure validation, not model-quality measurement. Deterministic reasoning makes tests repeatable and keeps the fixed-seed baseline independent of external model availability.
+
+Consequences:
+
+- The baseline planner creates a fixed memory-write, memory-query, final-answer plan for the initial memory task.
+- The agent emits deterministic trace events and trace IDs.
+- A fixed LLM adapter can be introduced later without changing the `AgentRunInput`, `AgentAction`, `AgentObservation`, or `AgentOutput` contracts.
+
+### DEC-014: Inject Tool Clients into the Baseline SUT Agent
+
+Decision ID: DEC-014
+
+Date: 2026-06-05
+
+Status: accepted
+
+Context:
+
+Phase 1E must demonstrate that the SUT can call tools through an MCP-style interface, but concrete mock services are scheduled for Phase 1F.
+
+Decision:
+
+The baseline SUT agent depends on an injected `ToolClient` protocol rather than constructing or owning mock services directly.
+
+Rationale:
+
+This preserves the boundary between the SUT agent and the mock service layer. It allows Phase 1E tests to use a deterministic in-memory tool-client double while keeping production mock service implementation deferred to Phase 1F.
+
+Consequences:
+
+- The SUT agent can be tested without live APIs or concrete mock-service containers.
+- Phase 1F can implement mock services that satisfy the same tool-client boundary.
+- The agent core remains focused on perception, planning, action execution, observation processing, and final answer generation.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library
@@ -417,6 +469,6 @@ Initial preference:
 
 Use a deterministic stubbed reasoning module first to validate orchestration, mock services, tracing, verification, and reporting without external model dependency. Introduce a fixed LLM adapter only after the baseline infrastructure is stable.
 
-Resolution target:
+Resolution:
 
-Phase 1E.
+Resolved by DEC-013. Phase 1E uses deterministic local baseline reasoning.
