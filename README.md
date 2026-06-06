@@ -14,11 +14,12 @@ Implemented:
 - Phase 1D: minimal orchestrator and deterministic run-context creation,
 - Phase 1E: deterministic baseline SUT agent core,
 - Phase 1F: deterministic mock memory service,
-- Phase 1G: deterministic trace logging and trace artifact validation.
+- Phase 1G: deterministic trace logging and trace artifact validation,
+- Phase 1H: deterministic rule-based verification.
 
 Next planned phase:
 
-- Phase 1H: rule-based verification.
+- Phase 1I: first reproducible baseline run.
 
 ## Documentation
 

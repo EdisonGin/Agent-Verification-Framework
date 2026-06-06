@@ -82,6 +82,8 @@ Deliverable D1: containerised benchmark environment, tool schemas, trace pipelin
 
 The Phase 1 trace pipeline starts with local JSON `RunTrace` artifacts. Streaming systems such as Kafka or Flink are not required for the baseline and should only be introduced later if experiment scale or live dashboard requirements justify the extra infrastructure.
 
+The Phase 1 verification pipeline starts with deterministic rule-based checks against `TaskCase.success_criteria`. LLM-as-judge and consensus verification are later extensions, not prerequisites for the first reproducible baseline.
+
 ### Phase 2: Modular Component Integration
 
 Goal: implement interchangeable memory, retrieval, and scheduling components while keeping their interfaces fixed.

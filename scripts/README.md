@@ -35,4 +35,17 @@ python3 -m unittest discover -s tests
 env PYTHONPATH=src python3 -c "from avf.tracing import TraceWriter, TraceReader, build_run_trace; print('tracing imports ok')"
 ```
 
-Later phases will add baseline run, verification, and experiment execution scripts.
+Phase 1H validates rule-based verification through the unit test suite and import check:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -c "from avf.verification import RuleBasedVerifier, VerificationResultWriter; print('verification imports ok')"
+```
+
+Once a trace artifact exists, run:
+
+```text
+env PYTHONPATH=src python3 -m avf verify-trace --task test_data/tasks/memory_recall_001.json --trace artifacts/traces/<run_id>.json --result-dir artifacts/results
+```
+
+Later phases will add baseline run, metrics, reporting, and experiment execution scripts.
