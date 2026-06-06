@@ -533,6 +533,25 @@ The deterministic Phase 1H checks are:
 
 Each check produces structured evidence. Failed checks produce explicit `failure_reasons` in the returned `VerificationResult`.
 
+## Phase 1I Implementation
+
+The first reproducible baseline run produces all Phase 1 artifact contracts:
+
+- `RunTrace` from the trace logging layer,
+- `VerificationResult` from the rule-based verifier,
+- `MetricResult` from the deterministic metrics calculator,
+- Markdown report from the reporting layer.
+
+The Phase 1I metric calculator is intentionally minimal and deterministic:
+
+- `task_success` is copied from the verification result,
+- `latency_ms` is set to `0` because Phase 1 uses synthetic deterministic timestamps rather than wall-clock timing,
+- `step_count` is calculated from agent action trace events,
+- `tool_call_count` is calculated from `tool_call` trace events,
+- `goal_drift`, `repetition_rate`, and `recovery_steps` are derived from available trace events.
+
+The baseline run can be executed through `python -m avf run-baseline` or `scripts/run-phase1-baseline.sh`.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator
@@ -601,9 +620,9 @@ The reporting layer consumes:
 
 ## Open Questions
 
-The following question remains open for later Phase 1 subphases:
+The following questions remain open for later phases:
 
-1. Whether the first report format should be Markdown only or Markdown plus JSON.
+1. Whether richer report formats should be added after the Markdown baseline.
 
 ## Dissertation Use
 

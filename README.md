@@ -15,11 +15,12 @@ Implemented:
 - Phase 1E: deterministic baseline SUT agent core,
 - Phase 1F: deterministic mock memory service,
 - Phase 1G: deterministic trace logging and trace artifact validation,
-- Phase 1H: deterministic rule-based verification.
+- Phase 1H: deterministic rule-based verification,
+- Phase 1I: first reproducible baseline run with trace, verification, metrics, and Markdown report artifacts.
 
 Next planned phase:
 
-- Phase 1I: first reproducible baseline run.
+- Phase 2: modular component integration.
 
 ## Documentation
 
@@ -50,6 +51,12 @@ Validate fixtures:
 
 ```text
 env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+```
+
+Run the Phase 1 baseline:
+
+```text
+./scripts/run-phase1-baseline.sh
 ```
 
 ## Package Layout

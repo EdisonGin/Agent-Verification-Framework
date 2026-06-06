@@ -84,6 +84,8 @@ The Phase 1 trace pipeline starts with local JSON `RunTrace` artifacts. Streamin
 
 The Phase 1 verification pipeline starts with deterministic rule-based checks against `TaskCase.success_criteria`. LLM-as-judge and consensus verification are later extensions, not prerequisites for the first reproducible baseline.
 
+Phase 1I completes the first local thin slice by producing trace, verification, metric, and Markdown report artifacts from one deterministic baseline run. This validates the full local artifact pipeline before Phase 2 component variants are added.
+
 ### Phase 2: Modular Component Integration
 
 Goal: implement interchangeable memory, retrieval, and scheduling components while keeping their interfaces fixed.

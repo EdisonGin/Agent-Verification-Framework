@@ -203,6 +203,14 @@ Initial reporting formats:
 - Markdown run reports,
 - CLI summary.
 
+Phase 1I implementation:
+
+- baseline orchestration writes one `RunTrace` artifact,
+- rule-based verification writes one `VerificationResult` artifact,
+- deterministic metric calculation writes one `MetricResult` artifact,
+- Markdown reporting writes one run report,
+- the CLI and shell script provide the first reproducible baseline run entrypoints.
+
 Later reporting formats:
 
 - dashboard views,

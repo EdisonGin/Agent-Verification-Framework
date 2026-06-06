@@ -1,8 +1,6 @@
-"""Execution-engine shell for Phase 1D.
+"""Execution-engine shell for Phase 1D run-context creation.
 
-The engine currently creates a run context only. Agent execution starts in
-Phase 1E, mock services in Phase 1F, and trace/result production in later
-Phase 1 subphases.
+Phase 1I baseline execution is implemented separately in baseline_run.py.
 """
 
 from __future__ import annotations
@@ -25,4 +23,3 @@ class ExecutionEngine:
         tool_specs: List[ToolSpec],
     ) -> RunContext:
         return build_run_context(task, run_config, component_config, tool_specs)
-

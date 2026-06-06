@@ -339,6 +339,8 @@ env PYTHONPATH=src python3 -m avf verify-trace --task test_data/tasks/memory_rec
 
 ### Phase 1I: First Reproducible Baseline Run
 
+Status: complete.
+
 Outputs:
 
 - baseline run script,
@@ -353,6 +355,50 @@ Acceptance criteria:
 - artifacts are written to known locations,
 - report summarises task success, tool calls, and verifier outcome,
 - Phase 1 baseline is ready for extension.
+
+Implemented outputs:
+
+- baseline run orchestration in `src/avf/orchestration/baseline_run.py`,
+- deterministic metric calculation in `src/avf/metrics/calculator.py`,
+- metric result JSON artifact writer in `src/avf/metrics/writer.py`,
+- Markdown run report generation in `src/avf/reporting/markdown.py`,
+- CLI command through `python -m avf run-baseline`,
+- reproducible script in `scripts/run-phase1-baseline.sh`,
+- tests in `tests/test_baseline_run.py`.
+
+The Phase 1I baseline run executes:
+
+```text
+TaskCase + RunConfig + ComponentConfig + ToolSpec fixtures
+  -> RunContext
+  -> BaselineSUTAgent
+  -> MockMemoryService
+  -> RunTrace
+  -> RuleBasedVerifier
+  -> MetricResult
+  -> Markdown report
+```
+
+Artifacts are written under known directories:
+
+```text
+artifacts/traces/<run_id>.json
+artifacts/results/<run_id>.rule_based_success_criteria_v1.json
+artifacts/results/<run_id>.metrics.json
+artifacts/reports/<run_id>.md
+```
+
+The script supports an `AVF_ARTIFACT_ROOT` override for reproducibility tests without writing into the repository artifact directories.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase1i_cli
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase1i_script PYTHONPATH=src ./scripts/run-phase1-baseline.sh
+env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase1_baseline; from avf.metrics import calculate_metric_result; from avf.reporting import build_run_report; print('phase1 baseline imports ok')"
+```
 
 ## Initial Thin Slice
 
