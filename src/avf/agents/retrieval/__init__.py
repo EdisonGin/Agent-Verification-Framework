@@ -1,2 +1,5 @@
-"""Agent retrieval/search module package placeholder."""
+"""Agent retrieval/search module interfaces."""
 
+from .interface import RetrievalModule
+
+__all__ = ["RetrievalModule"]

@@ -1,2 +1,5 @@
-"""Base agent / System Under Test package placeholder for Phase 1E."""
+"""Base agent / System Under Test package."""
 
+from .core import BaselineAgentResult, BaselineSUTAgent
+
+__all__ = ["BaselineAgentResult", "BaselineSUTAgent"]

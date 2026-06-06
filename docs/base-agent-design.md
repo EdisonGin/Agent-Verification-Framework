@@ -181,6 +181,15 @@ Required properties:
 - stable tool-call interface,
 - clear separation between agent core and pluggable modules.
 
+Phase 1E implementation:
+
+- the baseline SUT agent accepts `AgentRunInput` from the Phase 1D `RunContext`,
+- perception, planning, action execution, observation processing, and final answer generation are implemented as separate modules,
+- tool calls are dispatched through an injected `ToolClient` protocol,
+- trace events are generated deterministically without wall-clock timestamps,
+- memory, retrieval, and scheduling interfaces are declared for later component variants,
+- the concrete mock service implementation is deferred to Phase 1F.
+
 ## Phase 2 Expansion
 
 Phase 2 expands the baseline agent into the controlled modular SUT:
@@ -212,4 +221,3 @@ This document supports the dissertation by explaining:
 - which modules are controlled experimental factors,
 - why only selected variants are included in the factorial design,
 - how telemetry and traces are generated for verification.
-
