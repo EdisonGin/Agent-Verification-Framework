@@ -175,6 +175,16 @@ Initial Phase 1 scope:
 - deterministic success/failure,
 - evidence captured from trace events.
 
+Phase 1H implementation:
+
+- the first verifier is `RuleBasedVerifier`,
+- it consumes `TaskCase` and `RunTrace`,
+- it returns a `VerificationResult`,
+- it checks trace validity, task identity, completed status, required final-answer text, and required tool-call presence,
+- it writes optional JSON verification result artifacts for later metrics and reporting.
+
+LLM-as-judge and consensus verification remain later extensions. The baseline verifier is deterministic so that early experimental results are reproducible and evidence-backed.
+
 ## Layer 4: Reporting Layer
 
 The reporting layer turns traces, metrics, and verifier outputs into human-readable artifacts.

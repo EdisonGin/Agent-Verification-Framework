@@ -8,9 +8,11 @@ import sys
 from pathlib import Path
 from typing import Iterable, Optional
 
-from avf.contracts import ValidationError
-from avf.contracts.fixture_loader import validate_fixture_tree
+from avf.contracts import TaskCase, ValidationError
+from avf.contracts.fixture_loader import load_json, validate_fixture_tree
 from avf.orchestration import build_run_context_from_files
+from avf.tracing import read_run_trace
+from avf.verification import RuleBasedVerifier, VerificationResultWriter
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -43,6 +45,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         required=True,
         help="Path to a ToolSpec JSON fixture. May be supplied more than once.",
+    )
+
+    verify_trace = subparsers.add_parser(
+        "verify-trace",
+        help="Verify a RunTrace JSON artifact against a TaskCase fixture.",
+    )
+    verify_trace.add_argument("--task", required=True, help="Path to a TaskCase JSON fixture.")
+    verify_trace.add_argument("--trace", required=True, help="Path to a RunTrace JSON artifact.")
+    artifact_destination = verify_trace.add_mutually_exclusive_group()
+    artifact_destination.add_argument(
+        "--result-dir",
+        help="Directory where the VerificationResult JSON artifact should be written.",
+    )
+    artifact_destination.add_argument(
+        "--output",
+        help="Exact path where the VerificationResult JSON artifact should be written.",
     )
 
     return parser
@@ -78,6 +96,22 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
 
         print(json.dumps(context.to_dict(), indent=2, sort_keys=True))
         return 0
+
+    if args.command == "verify-trace":
+        try:
+            task = TaskCase.from_dict(load_json(Path(args.task)))
+            trace = read_run_trace(Path(args.trace))
+            result = RuleBasedVerifier().verify(task, trace)
+            if args.output:
+                VerificationResultWriter(Path(args.output).parent).write(result, Path(args.output))
+            elif args.result_dir:
+                VerificationResultWriter(Path(args.result_dir)).write(result)
+        except ValidationError as exc:
+            print(f"Trace verification failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(result.to_dict(), indent=2, sort_keys=True))
+        return 0 if result.passed else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 2

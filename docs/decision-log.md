@@ -481,6 +481,33 @@ Consequences:
 - Verification, metrics, and reporting can consume the same persisted trace contract.
 - Kafka, Flink, or similar infrastructure may be revisited later for large-scale runs, dashboards, or live monitoring, but they are not part of Phase 1G.
 
+### DEC-018: Start Verification with Deterministic Rule-Based Checks
+
+Decision ID: DEC-018
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 1H requires a verifier that can consume a stored `RunTrace` and a `TaskCase` and return an evidence-backed `VerificationResult`. The architecture allows later LLM-as-judge and consensus verification, but those would introduce model dependency and semantic variability before the local baseline pipeline is complete.
+
+Decision:
+
+Implement Phase 1H with a deterministic rule-based verifier. Defer LLM-as-judge and consensus verification until deterministic trace, metrics, and reporting artifacts are stable.
+
+Rationale:
+
+The first verifier should validate the framework's contracts and task success criteria without external services or non-deterministic judging. Rule-based checks are directly auditable, easy to reproduce, and sufficient for the initial memory-recall task.
+
+Consequences:
+
+- `RuleBasedVerifier` checks trace validity, task identity, run completion, required final-answer text, and required tool calls.
+- Every verification output is represented as a versioned `VerificationResult`.
+- Failed checks produce explicit failure reasons and structured evidence.
+- Semantic or subjective answer-quality checks remain future extensions rather than Phase 1 dependencies.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

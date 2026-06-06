@@ -514,6 +514,25 @@ Trace logging now assembles agent-emitted `TraceEvent` values into a persisted `
 
 The Phase 1G trace artifact is intentionally file-based. It records the contract required by the verifier without introducing Kafka, Flink, or another streaming backend before the local baseline pipeline is complete.
 
+## Phase 1H Implementation
+
+The first verifier consumes the documented `TaskCase` and `RunTrace` contracts and returns a `VerificationResult`:
+
+- `RuleBasedVerifier` is implemented in `src/avf/verification/rule_based.py`,
+- trace evidence extraction is implemented in `src/avf/verification/evidence.py`,
+- verification result artifact writing is implemented in `src/avf/verification/writer.py`,
+- CLI verification is available through `python -m avf verify-trace`.
+
+The deterministic Phase 1H checks are:
+
+- `RunTrace` schema and cross-event consistency validation,
+- `RunTrace.task_id` matches `TaskCase.task_id`,
+- `RunTrace.status` is `completed`,
+- final answer contains each `required_final_answer_contains` string from `TaskCase.success_criteria`,
+- trace includes each `required_tool_calls` entry from `TaskCase.success_criteria`.
+
+Each check produces structured evidence. Failed checks produce explicit `failure_reasons` in the returned `VerificationResult`.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

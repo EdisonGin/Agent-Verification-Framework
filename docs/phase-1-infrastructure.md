@@ -293,6 +293,8 @@ env PYTHONPATH=src python3 -c "from avf.tracing import TraceWriter, TraceReader,
 
 ### Phase 1H: Rule-Based Verification
 
+Status: complete.
+
 Outputs:
 
 - deterministic verifier,
@@ -306,6 +308,34 @@ Acceptance criteria:
 - verifier returns `VerificationResult`,
 - pass/fail decision is evidence-backed,
 - failure reasons are explicit.
+
+Implemented outputs:
+
+- deterministic rule-based verifier in `src/avf/verification/rule_based.py`,
+- trace evidence extraction helpers in `src/avf/verification/evidence.py`,
+- verification result JSON artifact writer in `src/avf/verification/writer.py`,
+- exported verification API in `src/avf/verification/__init__.py`,
+- CLI command through `python -m avf verify-trace`,
+- tests in `tests/test_verification.py`.
+
+The Phase 1H verifier consumes a `TaskCase` and a `RunTrace`, validates trace consistency, checks task identity, requires completed run status, checks required final-answer text, and checks required tool-call presence. It returns a `VerificationResult` with per-check evidence and explicit failure reasons.
+
+LLM-as-judge and consensus verification are intentionally deferred. Phase 1H uses deterministic rules so the first baseline pipeline remains reproducible and auditable.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf create-run-context --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json
+env PYTHONPATH=src python3 -c "from avf.verification import RuleBasedVerifier, VerificationResultWriter; print('verification imports ok')"
+```
+
+Once a trace artifact exists, the verifier CLI can be run as:
+
+```text
+env PYTHONPATH=src python3 -m avf verify-trace --task test_data/tasks/memory_recall_001.json --trace artifacts/traces/<run_id>.json --result-dir artifacts/results
+```
 
 ### Phase 1I: First Reproducible Baseline Run
 
@@ -418,3 +448,4 @@ Example branch names:
 - `phase-1e-baseline-sut-agent`
 - `phase-1f-minimal-mock-service`
 - `phase-1g-trace-logging`
+- `phase-1h-rule-based-verification`
