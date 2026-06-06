@@ -490,6 +490,18 @@ The baseline SUT agent consumes `AgentRunInput` and returns an agent-side result
 
 The baseline SUT agent is implemented in `src/avf/agents/core/`. It dispatches tool calls through the `ToolClient` protocol in `src/avf/agents/tools/client.py`. Concrete mock service behavior is intentionally deferred to Phase 1F.
 
+## Phase 1F Implementation
+
+The first concrete mock service implements the `ToolClient` protocol and consumes `ToolCall` values directly:
+
+- `MockMemoryService` is implemented in `src/avf/mock_services/memory_service.py`,
+- `memory.write` stores deterministic in-memory `MemoryRecord` values,
+- `memory.query` returns deterministic records filtered by key and metadata,
+- unsupported tools and invalid arguments return structured `ToolResult` errors,
+- perturbation hooks are defined in `src/avf/mock_services/perturbations.py`.
+
+The mock service returns documented `ToolResult` values and can be injected into the Phase 1E baseline SUT agent.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

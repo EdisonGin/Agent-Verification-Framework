@@ -401,6 +401,59 @@ Consequences:
 - Phase 1F can implement mock services that satisfy the same tool-client boundary.
 - The agent core remains focused on perception, planning, action execution, observation processing, and final answer generation.
 
+### DEC-015: Use Memory as the First Mock Service
+
+Decision ID: DEC-015
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 1F requires one deterministic mock service with one or two tool endpoints. The current Phase 1 task is memory-focused, and the Phase 1E baseline SUT agent already dispatches `memory.write` and `memory.query` actions through the `ToolClient` protocol.
+
+Decision:
+
+Implement a deterministic mock memory service first, with `memory.write` and `memory.query` endpoints.
+
+Rationale:
+
+The memory mock service directly supports the existing memory-recall task and validates the SUT-to-tool boundary without adding unrelated file/API complexity. It also aligns with memory as one of the dissertation's controlled component factors.
+
+Consequences:
+
+- `MockMemoryService` stores in-memory records deterministically.
+- The service returns documented `ToolResult` values.
+- Unsupported tools and invalid arguments produce structured errors.
+- File, API, and collaboration-style mock services remain deferred.
+
+### DEC-016: Add Perturbation Hooks Before Full Perturbation Schedules
+
+Decision ID: DEC-016
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+The dissertation requires controlled perturbations, but Phase 1F only needs a minimal mock service. Full perturbation schedule replay depends on later orchestration and trace integration.
+
+Decision:
+
+Add a small perturbation hook interface to mock services now, with no-op and static deterministic implementations. Defer full schedule loading and replay semantics to later phases.
+
+Rationale:
+
+This keeps the mock service deterministic while preserving a clear extension point for temporary unavailability, noisy observations, and latency perturbations.
+
+Consequences:
+
+- Phase 1F uses `NoPerturbationController` by default.
+- `StaticPerturbationController` validates that service results can be deterministically perturbed.
+- Later schedule replay can build on the same hook without changing the `ToolClient` boundary.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library
@@ -441,9 +494,9 @@ Initial preference:
 
 Use a memory-focused mock service because memory is one of the dissertation's target experimental factors and supports a simple first task.
 
-Resolution target:
+Resolution:
 
-Phase 1F.
+Resolved by DEC-015. Phase 1F implements a deterministic mock memory service.
 
 ### OPEN-004: Containerisation Timing
 

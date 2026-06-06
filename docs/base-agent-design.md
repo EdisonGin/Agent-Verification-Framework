@@ -190,6 +190,13 @@ Phase 1E implementation:
 - memory, retrieval, and scheduling interfaces are declared for later component variants,
 - the concrete mock service implementation is deferred to Phase 1F.
 
+Phase 1F implementation:
+
+- `MockMemoryService` implements the `ToolClient` protocol used by the baseline SUT agent,
+- `memory.write` and `memory.query` provide deterministic mock memory behavior,
+- structured errors are returned through `ToolResult`,
+- a perturbation hook exists for later fixed perturbation schedules.
+
 ## Phase 2 Expansion
 
 Phase 2 expands the baseline agent into the controlled modular SUT:
