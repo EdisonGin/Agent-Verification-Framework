@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Iterable, Optional
 
 from avf.contracts import RunTrace, SCHEMA_VERSION, TraceEvent, ValidationError
-from avf.orchestration import RunContext
+from avf.orchestration.run_context import RunContext
 
 from .validation import validate_run_trace
 
@@ -57,4 +57,3 @@ def build_run_trace_from_agent_result(
         started_at=started_at,
         completed_at=completed_at,
     )
-

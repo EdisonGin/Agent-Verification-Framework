@@ -508,6 +508,34 @@ Consequences:
 - Failed checks produce explicit failure reasons and structured evidence.
 - Semantic or subjective answer-quality checks remain future extensions rather than Phase 1 dependencies.
 
+### DEC-019: Use Deterministic File Artifacts for the First Baseline Run
+
+Decision ID: DEC-019
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 1I must demonstrate the first reproducible end-to-end baseline run. The framework now has contracts, deterministic orchestration, a baseline SUT agent, a deterministic mock memory service, trace logging, and rule-based verification.
+
+Decision:
+
+Implement the first baseline run as a deterministic local artifact pipeline that writes a `RunTrace`, `VerificationResult`, `MetricResult`, and Markdown run report.
+
+Rationale:
+
+The Phase 1 goal is to prove the local benchmark environment before adding component variants, containers, dashboards, or large-scale experiment execution. File artifacts are inspectable, easy to compare across repeated runs, and suitable for dissertation audit evidence.
+
+Consequences:
+
+- `scripts/run-phase1-baseline.sh` is the first reproducible run entrypoint.
+- `python -m avf run-baseline` provides the equivalent CLI command.
+- Running the same task/config/component/tool-schema cell with the same seed produces equivalent artifact contents.
+- Metrics are deterministic and avoid wall-clock timing in Phase 1.
+- More sophisticated metrics, report formats, and dashboards remain later extensions.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

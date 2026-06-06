@@ -48,4 +48,25 @@ Once a trace artifact exists, run:
 env PYTHONPATH=src python3 -m avf verify-trace --task test_data/tasks/memory_recall_001.json --trace artifacts/traces/<run_id>.json --result-dir artifacts/results
 ```
 
-Later phases will add baseline run, metrics, reporting, and experiment execution scripts.
+Phase 1I adds the first reproducible baseline run script:
+
+```text
+./scripts/run-phase1-baseline.sh
+```
+
+It writes:
+
+```text
+artifacts/traces/<run_id>.json
+artifacts/results/<run_id>.rule_based_success_criteria_v1.json
+artifacts/results/<run_id>.metrics.json
+artifacts/reports/<run_id>.md
+```
+
+Use `AVF_ARTIFACT_ROOT` to redirect outputs for reproducibility checks:
+
+```text
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase1i PYTHONPATH=src ./scripts/run-phase1-baseline.sh
+```
+
+Later phases will add component-variant execution and experiment scripts.
