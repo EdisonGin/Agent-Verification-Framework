@@ -177,6 +177,32 @@ Example:
 }
 ```
 
+Factor coding:
+
+| Code | Field | Value |
+|---|---|---|
+| `A1` | `memory_backend` | `sqlite` |
+| `A2` | `memory_backend` | `vector` |
+| `B1` | `retrieval_strategy` | `bm25` |
+| `B2` | `retrieval_strategy` | `embedding` |
+| `C1` | `scheduling_policy` | `sequential` |
+| `C2` | `scheduling_policy` | `rule_based` |
+
+Phase 2G provides the complete fixture matrix:
+
+| Fixture ID | Memory backend | Retrieval strategy | Scheduling policy |
+|---|---|---|---|
+| `A1_B1_C1` | `sqlite` | `bm25` | `sequential` |
+| `A1_B1_C2` | `sqlite` | `bm25` | `rule_based` |
+| `A1_B2_C1` | `sqlite` | `embedding` | `sequential` |
+| `A1_B2_C2` | `sqlite` | `embedding` | `rule_based` |
+| `A2_B1_C1` | `vector` | `bm25` | `sequential` |
+| `A2_B1_C2` | `vector` | `bm25` | `rule_based` |
+| `A2_B2_C1` | `vector` | `embedding` | `sequential` |
+| `A2_B2_C2` | `vector` | `embedding` | `rule_based` |
+
+No `TaskCase`, `ToolSpec`, or run schema field changes are required to switch between these component cells.
+
 ## RunContext
 
 `RunContext` is created by the Phase 1D orchestrator. It is the validated execution context for one task/config/component/tool-schema cell.
@@ -691,6 +717,8 @@ After Phase 2F, the currently implemented component levels are:
 | Retrieval | `embedding` | available | Phase 2F |
 | Scheduling | `sequential` | available | Phase 1E |
 | Scheduling | `rule_based` | available | Phase 2D |
+
+After Phase 2G, every `2^3` `ComponentConfig` fixture resolves to an implemented component bundle. The schema is unchanged; Phase 2G adds fixture coverage and registry validation across all factor cells.
 
 ## Boundary Contracts
 

@@ -114,6 +114,8 @@ Planned implementations:
 | DAG-based scheduler | Later extension |
 | Parallel/concurrent scheduler | Later extension |
 
+Phase 2G records these dissertation factors as explicit `ComponentConfig` fixtures. The fixture ID format is `A#_B#_C#`, where A selects memory, B selects retrieval, and C selects scheduling. This keeps component substitution separate from task fixtures, tool schemas, and verification rules.
+
 ## Tool / Action Layer
 
 The tool/action layer acts as an MCP-style client.

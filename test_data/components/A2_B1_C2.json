@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "config_id": "A2_B1_C2",
+  "memory_backend": "vector",
+  "retrieval_strategy": "bm25",
+  "scheduling_policy": "rule_based"
+}

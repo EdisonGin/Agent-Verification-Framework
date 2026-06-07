@@ -302,6 +302,13 @@ Phase 2F introduces the second SUT retrieval strategy:
 - query results use the same ranked payload shape as BM25,
 - retrieval strategy remains independent from the selected memory backend.
 
+Phase 2G completes the component fixture matrix:
+
+- all eight `A#_B#_C#` `ComponentConfig` fixtures exist under `test_data/components/`,
+- each fixture resolves through the component registry,
+- factor IDs map directly to memory, retrieval, and scheduling selections,
+- switching cells does not require task fixture or tool schema changes.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:
