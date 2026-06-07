@@ -14,7 +14,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from avf.agents.components import ComponentFactory, ComponentRegistry, build_component_bundle  # noqa: E402
-from avf.agents.scheduling import SequentialScheduler  # noqa: E402
+from avf.agents.scheduling import RuleBasedScheduler, SequentialScheduler  # noqa: E402
 from avf.contracts import MetricResult, RunTrace, ValidationError, VerificationResult  # noqa: E402
 from avf.orchestration import build_run_context, run_phase1_baseline  # noqa: E402
 from avf.storage import FileSystemResultsStore, FileSystemTestDataRepository  # noqa: E402
@@ -72,10 +72,19 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "retrieval_strategy=embedding; planned for Phase 2F"):
             ComponentRegistry().resolve(config)
 
-    def test_component_registry_rejects_unimplemented_scheduling_variant(self) -> None:
+    def test_component_registry_resolves_rule_based_scheduler(self) -> None:
         config = replace(self.component_config, scheduling_policy="rule_based")
+        bundle = ComponentRegistry().resolve(config)
 
-        with self.assertRaisesRegex(ValidationError, "scheduling_policy=rule_based; planned for Phase 2D"):
+        self.assertEqual(bundle.scheduling.variant, "rule_based")
+        self.assertEqual(bundle.scheduling.status, "available")
+        self.assertEqual(bundle.scheduling.planned_phase, "Phase 2D")
+        self.assertIsInstance(bundle.scheduler, RuleBasedScheduler)
+
+    def test_component_registry_rejects_unknown_scheduling_variant(self) -> None:
+        config = replace(self.component_config, scheduling_policy="dag")
+
+        with self.assertRaisesRegex(ValidationError, "scheduling_policy=dag"):
             ComponentRegistry().resolve(config)
 
     def test_results_store_writes_baseline_artifact_contracts(self) -> None:
@@ -154,6 +163,31 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
         self.assertEqual(len(component_events), 1)
         self.assertEqual(component_events[0].payload["component_config"]["memory_backend"], "sqlite")
         self.assertEqual(component_events[0].payload["component_config"]["retrieval_strategy"], "bm25")
+
+    def test_baseline_trace_records_scheduler_decisions(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = run_phase1_baseline(
+                task_path=self.repository.task_path("memory_recall_001.json"),
+                run_config_path=self.repository.run_config_path("baseline_seed_001.json"),
+                component_config_path=self.repository.component_config_path("A1_B1_C1.json"),
+                tool_spec_paths=[
+                    self.repository.tool_spec_path("memory.write.json"),
+                    self.repository.tool_spec_path("memory.query.json"),
+                ],
+                artifact_root=Path(directory),
+            )
+
+        scheduling_events = [
+            event for event in result.trace.events
+            if event.payload.get("stage") == "scheduling"
+        ]
+
+        self.assertEqual(len(scheduling_events), 1)
+        self.assertEqual(scheduling_events[0].payload["policy"], "sequential")
+        self.assertEqual(
+            [decision["rule"] for decision in scheduling_events[0].payload["decisions"]],
+            ["preserve_planner_order", "preserve_planner_order", "preserve_planner_order"],
+        )
 
 
 if __name__ == "__main__":

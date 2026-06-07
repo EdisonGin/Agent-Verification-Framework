@@ -7,7 +7,7 @@ from typing import Dict, Optional
 
 from avf.agents.memory import MemoryModule, SQLiteMemory
 from avf.agents.retrieval import BM25Retriever, RetrievalModule
-from avf.agents.scheduling import Scheduler, SequentialScheduler
+from avf.agents.scheduling import RuleBasedScheduler, Scheduler, SequentialScheduler
 from avf.contracts import ComponentConfig, ValidationError
 
 
@@ -59,7 +59,7 @@ class ComponentRegistry:
             memory=memory,
             retrieval=retrieval,
             scheduling=scheduling,
-            scheduler=SequentialScheduler(),
+            scheduler=self._scheduler(config.scheduling_policy),
             memory_module=SQLiteMemory() if config.memory_backend == "sqlite" else None,
             retrieval_module=BM25Retriever() if config.retrieval_strategy == "bm25" else None,
         )
@@ -104,6 +104,25 @@ class ComponentRegistry:
                 planned_phase="Phase 1E",
                 description="Sequential scheduler is available and preserves planner order.",
             )
+        if variant == "rule_based":
+            return ComponentDescriptor(
+                family="scheduling",
+                variant="rule_based",
+                implementation_id="rule_based_scheduler",
+                status="available",
+                planned_phase="Phase 2D",
+                description=(
+                    "Rule-based scheduler selected by ComponentConfig "
+                    "and available through the scheduler interface."
+                ),
+            )
+        raise self._unsupported("scheduling_policy", variant)
+
+    def _scheduler(self, variant: str) -> Scheduler:
+        if variant == "sequential":
+            return SequentialScheduler()
+        if variant == "rule_based":
+            return RuleBasedScheduler()
         raise self._unsupported("scheduling_policy", variant, {"rule_based": "Phase 2D"})
 
     def _unsupported(self, field: str, variant: str, planned: Optional[Dict[str, str]] = None) -> ValidationError:

@@ -74,7 +74,7 @@ def run_phase1_baseline(
     component_bundle = build_component_bundle(run_context.component_config)
     results_store = FileSystemResultsStore.from_run_config(run_context.run_config, artifact_root)
 
-    agent_result = BaselineSUTAgent().run(
+    agent_result = BaselineSUTAgent(scheduler=component_bundle.scheduler).run(
         run_context.to_agent_run_input(),
         MockMemoryService(
             memory_backend=component_bundle.memory_module,
