@@ -15,13 +15,18 @@ __all__ = [
     "Phase2IntegrationResult",
     "Phase3AExperimentResult",
     "Phase3BPilotQAResult",
+    "Phase3CDatasetFreezeResult",
     "QAValidationResult",
     "RerunRecord",
     "RunContext",
+    "build_dataset_index",
+    "build_frozen_dataset_manifest",
     "build_failure_notes",
     "build_run_context",
     "build_run_context_from_files",
     "build_experiment_matrix",
+    "freeze_phase3c_dataset",
+    "freeze_phase3c_dataset_from_config",
     "has_unresolved_infrastructure_failures",
     "load_experiment_config",
     "read_failure_notes",
@@ -31,6 +36,7 @@ __all__ = [
     "run_phase2_integration_baseline",
     "run_component_aware_baseline",
     "validate_dataset_execution_gate",
+    "validate_dataset_freeze_inputs",
     "validate_failure_notes",
     "validate_rerun_records",
     "write_failure_notes_json",
@@ -70,6 +76,17 @@ def __getattr__(name: str) -> object:
         from . import experiment_matrix
 
         return getattr(experiment_matrix, name)
+    if name in {
+        "Phase3CDatasetFreezeResult",
+        "build_dataset_index",
+        "build_frozen_dataset_manifest",
+        "freeze_phase3c_dataset",
+        "freeze_phase3c_dataset_from_config",
+        "validate_dataset_freeze_inputs",
+    }:
+        from . import dataset_freeze
+
+        return getattr(dataset_freeze, name)
     if name in {
         "FailureNote",
         "Phase3BPilotQAResult",

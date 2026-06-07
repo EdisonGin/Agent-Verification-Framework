@@ -907,6 +907,36 @@ Consequences:
 - Unresolved infrastructure failures with `dataset_decision=block_freeze` block progression.
 - Phase 3C remains responsible for dataset index and frozen dataset manifest creation.
 
+### DEC-033: Freeze Datasets with an Artifact-Backed Index Before Analysis
+
+Decision ID: DEC-033
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+After Phase 3B, the framework can run the pilot matrix, validate artifacts, and record QA decisions. The next methodological requirement is to preserve the accepted run set as dissertation evidence before analysis begins. The framework still does not have enough run volume or dashboard requirements to justify a separate results database.
+
+Decision:
+
+Implement Phase 3C as an artifact-backed dataset freeze. The freeze step reads the existing Phase 3A/3B artifact set, blocks if pilot QA is not ready or unresolved infrastructure failures remain, writes `dataset_index.json` as the analysis entrypoint, writes `frozen_dataset_manifest.json` with source and freeze artifact hashes, and writes `dataset_report.md` for human review.
+
+Rationale:
+
+The dataset index makes analysis reproducible without rerunning experiments or scanning mutable directories. Hashing source and freeze artifacts preserves integrity evidence for the dissertation. Keeping the freeze artifact-first avoids introducing a database before real query needs are known.
+
+Consequences:
+
+- `freeze-phase3c-dataset` freezes an accepted pilot artifact set.
+- `scripts/run-phase3c-freeze.sh` provides a reproducible local command that runs the pilot prerequisite and then freezes the dataset.
+- Included runs must have valid trace, verification, metric, report, and manifest artifacts.
+- Excluded runs must have documented reasons.
+- The frozen manifest records the experiment config reference and commit hash.
+- Analysis should consume `dataset_index.json` instead of rerunning the experiment.
+- Phase 3D remains responsible for deciding whether a results index database or dashboard is justified.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

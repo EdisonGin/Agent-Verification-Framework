@@ -441,6 +441,8 @@ phase-3b-pilot-qa-rerun-records
 
 ### Phase 3C: Dataset Freeze
 
+Status: complete.
+
 Goal:
 
 Freeze the accepted experiment dataset for analysis.
@@ -459,6 +461,29 @@ Acceptance criteria:
 - excluded runs have documented reasons,
 - frozen dataset manifest references the experiment config and commit hash,
 - analysis can consume the dataset index without rerunning experiments.
+
+Implemented outputs:
+
+- `src/avf/orchestration/dataset_freeze.py` defines the Phase 3C freeze layer,
+- `freeze_phase3c_dataset` reads an existing accepted Phase 3A/3B artifact set and writes the frozen dataset artifacts,
+- `freeze-phase3c-dataset` exposes the freeze operation through the CLI,
+- `scripts/run-phase3c-freeze.sh` runs the Phase 3B prerequisite pilot and then freezes the accepted artifact set,
+- `dataset_index.json` records run metadata, inclusion status, artifact paths, artifact hashes, fixture references, QA summary, commit hash, and freeze timestamp,
+- `frozen_dataset_manifest.json` records the dataset ID, experiment ID, commit hash, experiment config reference, freeze prerequisites, source artifact hashes, and freeze artifact hashes,
+- `dataset_report.md` provides a human-readable freeze summary and analysis-use note,
+- tests cover successful freeze, analysis-ready dataset index contents, unresolved infrastructure failure blocking, CLI execution, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3c_script PYTHONPATH=src ./scripts/run-phase3c-freeze.sh
+env PYTHONPATH=src python3 -m avf freeze-phase3c-dataset --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3c_script --dataset-id phase3c_verify_dataset --frozen-at 2026-06-07T00:00:00Z --commit-hash phase3c_verify
+env PYTHONPATH=src python3 -c "from avf.orchestration import freeze_phase3c_dataset, freeze_phase3c_dataset_from_config; print('phase3c dataset freeze imports ok')"
+```
+
+Phase 3C does not implement a database or dashboard. The frozen dataset index is the analysis entrypoint until Phase 3D determines whether a separate results index or dashboard is justified.
 
 Suggested branch name:
 

@@ -176,3 +176,14 @@ env PYTHONPATH=src python3 -c "from avf.orchestration import FailureNote, RerunR
 ```
 
 The Phase 3B pilot writes `pilot_log.md`, `rerun_records.json`, `failure_notes.json`, `failure_notes.md`, and `pilot_qa_summary.json` under `artifacts/experiments/<experiment_id>/`. It also reruns the Phase 3A artifact-producing matrix because the pilot log is evidence over an actual pilot execution, not a static validation-only pass.
+
+Phase 3C validates dataset freeze:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3c_script PYTHONPATH=src ./scripts/run-phase3c-freeze.sh
+env PYTHONPATH=src python3 -m avf freeze-phase3c-dataset --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3c_script --dataset-id phase3c_verify_dataset --frozen-at 2026-06-07T00:00:00Z --commit-hash phase3c_verify
+env PYTHONPATH=src python3 -c "from avf.orchestration import freeze_phase3c_dataset, freeze_phase3c_dataset_from_config; print('phase3c dataset freeze imports ok')"
+```
+
+The Phase 3C freeze command reads an accepted Phase 3B artifact set and writes `dataset_index.json`, `frozen_dataset_manifest.json`, and `dataset_report.md` under `artifacts/experiments/<experiment_id>/`. The dataset index is the analysis entrypoint and includes run metadata, inclusion decisions, artifact paths, and SHA-256 hashes.

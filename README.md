@@ -28,11 +28,12 @@ Implemented:
 - Phase 2I: storage and artifact QA,
 - Phase 2J: Phase 2 integration baseline,
 - Phase 3A: experiment matrix and full factorial runner,
-- Phase 3B: pilot QA, rerun records, and failure-note templates.
+- Phase 3B: pilot QA, rerun records, and failure-note templates,
+- Phase 3C: dataset freeze index, manifest, and report.
 
 Next planned phase:
 
-- Phase 3C: dataset freeze.
+- Phase 3D: results index and dashboard readiness review.
 
 ## Documentation
 
@@ -83,6 +84,12 @@ Run the Phase 3B pilot QA workflow:
 
 ```text
 ./scripts/run-phase3b-pilot.sh
+```
+
+Run the Phase 3C dataset freeze workflow:
+
+```text
+./scripts/run-phase3c-freeze.sh
 ```
 
 ## Package Layout

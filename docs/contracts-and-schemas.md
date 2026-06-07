@@ -28,6 +28,8 @@ The schema design follows six principles:
 | `ExperimentMatrixRow` | Records one resolved task/seed/schedule/component/tool-schema cell and its expected deterministic run ID |
 | `RerunRecord` | Records rerun intent, decision, operator notes, timestamp, and commit hash for a controlled cell |
 | `FailureNote` | Classifies pilot failures and records the dataset decision for QA gating |
+| `DatasetIndex` | Records the frozen analysis entrypoint with run metadata, inclusion decisions, artifact paths, and hashes |
+| `FrozenDatasetManifest` | Records dataset freeze metadata, source artifact hashes, freeze artifact hashes, commit hash, and immutability policy |
 | `RunContext` | Stores the validated orchestration context created from task, run, component, and tool fixtures |
 | `AgentRunInput` | Bundles the orchestrator inputs passed into the base agent / SUT |
 | `AgentAction` | Represents an internal action or external tool action selected by the base agent |
@@ -587,6 +589,92 @@ artifacts/experiments/<experiment_id>/failure_notes.md
 
 Phase 3B also writes failure-note templates for the four failure classes. Unresolved infrastructure failures use `dataset_decision=block_freeze`; the dataset execution gate blocks progression until such failures are resolved.
 
+## DatasetIndex
+
+`DatasetIndex` is introduced in Phase 3C as the analysis-facing frozen dataset entrypoint.
+
+Required top-level fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `dataset_index_version` | string | Dataset index format version |
+| `dataset_id` | string | Stable frozen dataset identifier |
+| `experiment_id` | string | Source experiment identifier |
+| `frozen_at` | string | Freeze timestamp |
+| `commit_hash` | string | Code version used for the freeze |
+| `operator_notes` | string | Human freeze note |
+| `experiment_config_path` | string/null | Config fixture path used for the freeze |
+| `experiment_config_artifact` | string | Archived config artifact path |
+| `matrix_artifact` | string | Matrix artifact path |
+| `run_index_artifact` | string | Run index artifact path |
+| `pilot_qa_summary_artifact` | string | Pilot QA summary artifact path |
+| `fixture_versions` | object | Task, run config, component, tool schema, and perturbation references |
+| `matrix_summary` | object | Task IDs, run config IDs, seeds, schedules, and component cells |
+| `qa_summary` | object | Pilot decision, readiness flag, failure-note count, and rerun-record count |
+| `run_count` | integer | Total frozen run records |
+| `included_run_count` | integer | Runs included for analysis |
+| `excluded_run_count` | integer | Runs excluded from analysis |
+| `records` | list[object] | Per-run frozen dataset records |
+
+Each dataset record includes:
+
+- run ID,
+- task ID and task version,
+- run config ID,
+- seed,
+- perturbation schedule ID,
+- component config ID,
+- memory, retrieval, and scheduling levels,
+- inclusion status,
+- dataset decision,
+- exclusion reason when applicable,
+- task success and verification status,
+- artifact validation status,
+- trace, verification, metrics, report, and manifest artifact records with relative paths, SHA-256 hashes, and byte sizes.
+
+The dataset index is stored at:
+
+```text
+artifacts/experiments/<experiment_id>/dataset_index.json
+```
+
+Analysis should consume `dataset_index.json` rather than scanning mutable directories or rerunning experiments.
+
+## FrozenDatasetManifest
+
+`FrozenDatasetManifest` records the integrity boundary around the frozen dataset.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `frozen_dataset_manifest_version` | string | Manifest format version |
+| `dataset_id` | string | Frozen dataset identifier |
+| `experiment_id` | string | Source experiment identifier |
+| `frozen_at` | string | Freeze timestamp |
+| `commit_hash` | string | Code version used for the freeze |
+| `experiment_config_path` | string/null | Config fixture path used for the freeze |
+| `experiment_config_artifact` | string | Archived config artifact path |
+| `frozen` | boolean | Always `true` after successful freeze |
+| `immutability_policy` | string | Human-readable read-only policy |
+| `freeze_prerequisites` | object | Matrix completeness, included-run artifact validity, exclusion documentation, and pilot readiness |
+| `source_artifacts` | object | Hashes for source matrix, run index, pilot QA, and comparison artifacts |
+| `freeze_artifacts` | object | Hashes for dataset index and dataset report |
+
+The frozen manifest is stored at:
+
+```text
+artifacts/experiments/<experiment_id>/frozen_dataset_manifest.json
+```
+
+Phase 3C also writes:
+
+```text
+artifacts/experiments/<experiment_id>/dataset_report.md
+```
+
 ## Initial Storage Layout
 
 The planned storage layout is:
@@ -903,6 +991,14 @@ After Phase 3B, pilot QA artifacts are written beside the matrix and run index:
 - `failure_notes.json` and `failure_notes.md` store classified failure notes and templates.
 
 These QA artifacts do not replace raw run artifacts or the `ExperimentResult` comparison summary. They document whether the experiment can proceed to dataset freeze.
+
+After Phase 3C, dataset freeze artifacts are written beside the QA artifacts:
+
+- `dataset_index.json` becomes the analysis entrypoint,
+- `frozen_dataset_manifest.json` records source and freeze artifact hashes,
+- `dataset_report.md` summarises included and excluded runs.
+
+Raw per-run artifacts remain the source of truth, but after freeze they should be treated as read-only dissertation evidence.
 
 ## Boundary Contracts
 
