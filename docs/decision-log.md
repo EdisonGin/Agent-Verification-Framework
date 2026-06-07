@@ -645,7 +645,7 @@ Consequences:
 - `MockMemoryService` indexes memory records into the selected retrieval module.
 - `memory.query` can return deterministic ranked records and retrieval evidence.
 - SQLite remains a storage component rather than a ranking implementation.
-- Embedding retrieval remains deferred to Phase 2F.
+- At Phase 2C completion, embedding retrieval remained deferred to Phase 2F.
 
 ### DEC-024: Use Explainable Rule Priorities for the Second Scheduler
 
@@ -702,6 +702,34 @@ Consequences:
 - Similarity ranking is reproducible and testable offline.
 - The current vector representation is lexical rather than semantic.
 - Hosted or model-based embeddings remain deferred until their reproducibility impact is documented.
+
+### DEC-026: Use Deterministic Local Embeddings for the Second Retrieval Strategy
+
+Decision ID: DEC-026
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2F requires the second retrieval strategy for the dissertation's retrieval factor. The implementation must expose the same retrieval interface as BM25, remain independent from the selected memory backend, and avoid hosted embedding API dependencies by default.
+
+Decision:
+
+Implement `retrieval_strategy=embedding` as a local embedding retriever using the shared deterministic sparse lexical embedder. Do not call a hosted embedding service in Phase 2F.
+
+Rationale:
+
+This validates the embedding retrieval component boundary while preserving reproducibility and avoiding model-version drift, API keys, network access, and cost variability. The implementation remains inspectable and can later be replaced by a hosted or model-backed adapter if that tradeoff is explicitly documented.
+
+Consequences:
+
+- `EmbeddingRetriever` implements the shared retrieval interface.
+- Embedding retrieval can be paired with SQLite memory or vector memory through `ComponentConfig`.
+- Retrieval result payloads match the BM25 shape.
+- Ranking is reproducible and testable offline.
+- The current embedding representation is lexical rather than semantic.
 
 ## Open Decisions
 

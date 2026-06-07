@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Dict, Optional
 
 from avf.agents.memory import MemoryModule, SQLiteMemory, VectorMemory
-from avf.agents.retrieval import BM25Retriever, RetrievalModule
+from avf.agents.retrieval import BM25Retriever, EmbeddingRetriever, RetrievalModule
 from avf.agents.scheduling import RuleBasedScheduler, Scheduler, SequentialScheduler
 from avf.contracts import ComponentConfig, ValidationError
 
@@ -61,7 +61,7 @@ class ComponentRegistry:
             scheduling=scheduling,
             scheduler=self._scheduler(config.scheduling_policy),
             memory_module=self._memory_module(config.memory_backend),
-            retrieval_module=BM25Retriever() if config.retrieval_strategy == "bm25" else None,
+            retrieval_module=self._retrieval_module(config.retrieval_strategy),
         )
 
     def _memory(self, variant: str) -> ComponentDescriptor:
@@ -111,7 +111,26 @@ class ComponentRegistry:
                     "and available through the retrieval interface."
                 ),
             )
-        raise self._unsupported("retrieval_strategy", variant, {"embedding": "Phase 2F"})
+        if variant == "embedding":
+            return ComponentDescriptor(
+                family="retrieval",
+                variant="embedding",
+                implementation_id="embedding_retrieval",
+                status="available",
+                planned_phase="Phase 2F",
+                description=(
+                    "Embedding retrieval selected by ComponentConfig "
+                    "and available through the retrieval interface."
+                ),
+            )
+        raise self._unsupported("retrieval_strategy", variant)
+
+    def _retrieval_module(self, variant: str) -> RetrievalModule:
+        if variant == "bm25":
+            return BM25Retriever()
+        if variant == "embedding":
+            return EmbeddingRetriever()
+        raise self._unsupported("retrieval_strategy", variant)
 
     def _scheduling(self, variant: str) -> ComponentDescriptor:
         if variant == "sequential":

@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import math
-import re
-from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-
-TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
+from avf.agents.embeddings import DeterministicTextEmbedder
 
 
 @dataclass(frozen=True)
@@ -30,23 +26,6 @@ class VectorMemoryRecord:
             "value": self.value,
             "metadata": dict(self.metadata),
         }
-
-
-class DeterministicTextEmbedder:
-    """Create reproducible sparse lexical vectors without external embedding APIs."""
-
-    def embed(self, text: str) -> Dict[str, float]:
-        if not isinstance(text, str) or not text:
-            raise ValueError("DeterministicTextEmbedder text must be a non-empty string")
-
-        counts = Counter(TOKEN_PATTERN.findall(text.lower()))
-        if not counts:
-            return {}
-
-        norm = math.sqrt(sum(count * count for count in counts.values()))
-        if norm == 0:
-            return {}
-        return {token: count / norm for token, count in sorted(counts.items())}
 
 
 class VectorMemory:

@@ -227,6 +227,13 @@ Phase 2C implementation:
 - `memory.query` uses BM25 ranking when `retrieval_strategy=bm25`,
 - retrieval remains separate from memory storage and scheduling.
 
+Phase 2F implementation:
+
+- `EmbeddingRetriever` implements the second concrete retrieval strategy,
+- retrieval documents are indexed with deterministic sparse lexical embeddings,
+- embedding retrieval exposes the same ranked result payload as BM25 retrieval,
+- embedding retrieval remains independent from the selected memory backend.
+
 Phase 2D implementation:
 
 - `RuleBasedScheduler` implements the second concrete scheduling policy,
