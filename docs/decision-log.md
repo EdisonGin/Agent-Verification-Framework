@@ -619,6 +619,34 @@ Consequences:
 - The results store remains filesystem-backed.
 - Vector memory remains deferred to Phase 2E.
 
+### DEC-023: Use Dependency-Light Okapi BM25 for the First Retrieval Strategy
+
+Decision ID: DEC-023
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2C requires the first concrete retrieval strategy for the dissertation's retrieval factor. The implementation must be deterministic, inspectable, and independent from the SQLite memory storage backend.
+
+Decision:
+
+Implement `retrieval_strategy=bm25` as a local Okapi BM25 retriever using only the Python standard library. The retrieval module owns document indexing and ranking; the memory backend owns record persistence.
+
+Rationale:
+
+BM25 provides a transparent keyword-ranking baseline that is appropriate for controlled comparison against later embedding retrieval. Keeping the implementation local avoids adding an external search engine or dependency before the component contracts have stabilised.
+
+Consequences:
+
+- `BM25Retriever` implements the shared retrieval interface.
+- `MockMemoryService` indexes memory records into the selected retrieval module.
+- `memory.query` can return deterministic ranked records and retrieval evidence.
+- SQLite remains a storage component rather than a ranking implementation.
+- Embedding retrieval remains deferred to Phase 2F.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

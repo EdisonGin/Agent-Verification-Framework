@@ -76,7 +76,10 @@ def run_phase1_baseline(
 
     agent_result = BaselineSUTAgent().run(
         run_context.to_agent_run_input(),
-        MockMemoryService(memory_backend=component_bundle.memory_module),
+        MockMemoryService(
+            memory_backend=component_bundle.memory_module,
+            retrieval_module=component_bundle.retrieval_module,
+        ),
     )
     trace = build_run_trace_from_agent_result(run_context, agent_result)
     verification = RuleBasedVerifier().verify(run_context.task, trace)

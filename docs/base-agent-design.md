@@ -220,6 +220,13 @@ Phase 2B implementation:
 - memory tool calls can be delegated to the SQLite backend through the mock memory service,
 - SQLite memory remains separate from the filesystem results store.
 
+Phase 2C implementation:
+
+- `BM25Retriever` implements the first concrete retrieval strategy,
+- memory records are indexed as retrieval documents with metadata and source payloads,
+- `memory.query` uses BM25 ranking when `retrieval_strategy=bm25`,
+- retrieval remains separate from memory storage and scheduling.
+
 ## Out-of-Scope for Initial Dissertation Factorial Design
 
 The SUT diagram includes additional useful variants. These are documented but deferred unless time allows:

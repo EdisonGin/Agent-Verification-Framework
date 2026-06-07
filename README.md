@@ -18,11 +18,12 @@ Implemented:
 - Phase 1H: deterministic rule-based verification,
 - Phase 1I: first reproducible baseline run with trace, verification, metrics, and Markdown report artifacts,
 - Phase 2A: filesystem storage abstractions and component registry/factory,
-- Phase 2B: SQLite episodic memory backend.
+- Phase 2B: SQLite episodic memory backend,
+- Phase 2C: BM25 retrieval strategy.
 
 Next planned phase:
 
-- Phase 2C: BM25 retrieval strategy.
+- Phase 2D: rule-based scheduler.
 
 ## Documentation
 

@@ -595,6 +595,25 @@ After Phase 2B, the current `A1_B1_C1` cell resolves as:
 | Retrieval | `bm25` | deferred descriptor | Phase 2C |
 | Scheduling | `sequential` | available | Phase 1E |
 
+## Phase 2C Implementation
+
+Phase 2C implements BM25 retrieval as the first real SUT retrieval strategy:
+
+- `BM25Retriever` implements the shared `RetrievalModule` interface,
+- documents are indexed with `document_id`, text, metadata, and source payloads,
+- `query` returns ranked retrieval result dictionaries with `document_id`, `rank`, `score`, `text`, `metadata`, and `source`,
+- ranking uses deterministic Okapi BM25 scoring,
+- ties are resolved by index order and then document identifier,
+- `MockMemoryService` indexes memory records into the selected retrieval module and uses it for `memory.query` ranking.
+
+After Phase 2C, the current `A1_B1_C1` cell resolves as:
+
+| Family | Variant | Status | Concrete implementation phase |
+|---|---|---|---|
+| Memory | `sqlite` | available | Phase 2B |
+| Retrieval | `bm25` | available | Phase 2C |
+| Scheduling | `sequential` | available | Phase 1E |
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

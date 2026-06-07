@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Dict, Optional
 
 from avf.agents.memory import MemoryModule, SQLiteMemory
+from avf.agents.retrieval import BM25Retriever, RetrievalModule
 from avf.agents.scheduling import Scheduler, SequentialScheduler
 from avf.contracts import ComponentConfig, ValidationError
 
@@ -35,6 +36,7 @@ class ComponentBundle:
     scheduling: ComponentDescriptor
     scheduler: Scheduler
     memory_module: Optional[MemoryModule] = None
+    retrieval_module: Optional[RetrievalModule] = None
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -59,6 +61,7 @@ class ComponentRegistry:
             scheduling=scheduling,
             scheduler=SequentialScheduler(),
             memory_module=SQLiteMemory() if config.memory_backend == "sqlite" else None,
+            retrieval_module=BM25Retriever() if config.retrieval_strategy == "bm25" else None,
         )
 
     def _memory(self, variant: str) -> ComponentDescriptor:
@@ -82,9 +85,12 @@ class ComponentRegistry:
                 family="retrieval",
                 variant="bm25",
                 implementation_id="bm25_retrieval",
-                status="deferred",
+                status="available",
                 planned_phase="Phase 2C",
-                description="BM25 retrieval selected by ComponentConfig; implementation deferred to Phase 2C.",
+                description=(
+                    "BM25 retrieval selected by ComponentConfig "
+                    "and available through the retrieval interface."
+                ),
             )
         raise self._unsupported("retrieval_strategy", variant, {"embedding": "Phase 2F"})
 
