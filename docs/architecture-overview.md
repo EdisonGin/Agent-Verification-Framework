@@ -316,6 +316,13 @@ Phase 2H makes the baseline runner component-aware:
 - the selected memory and retrieval modules are passed into the mock memory service,
 - trace, CLI, and Markdown report outputs identify the selected component bundle.
 
+Phase 2I strengthens the filesystem results store:
+
+- baseline runs write deterministic artifact manifests under `manifests/`,
+- `FileSystemResultsStore` validates trace, verification, metric, and report artifacts as one set,
+- validation checks `run_id` consistency and missing artifacts before full experiment execution,
+- repeated runs use deterministic overwrite rather than versioned rerun directories.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:

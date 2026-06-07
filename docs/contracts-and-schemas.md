@@ -727,6 +727,29 @@ After Phase 2H, baseline-run artifacts include the resolved component bundle wit
 - the CLI summary includes `component_config_id` and `component_bundle`,
 - the Markdown report includes a component selection table.
 
+After Phase 2I, baseline runs also produce a deterministic artifact manifest. The manifest is results-store metadata rather than a new agent contract.
+
+Manifest fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Manifest schema version, currently `1.0` |
+| `manifest_version` | string | Manifest format version, currently `1.0` |
+| `run_id` | string | Run ID for the artifact set |
+| `rerun_policy` | string | Current policy, `deterministic_overwrite` |
+| `validation` | object | Artifact validation summary |
+
+The validation summary records:
+
+- `passed`,
+- `issues`,
+- artifact records for `trace`, `verification`, `metrics`, and `report`,
+- relative artifact paths,
+- SHA-256 content hashes,
+- byte sizes.
+
+The manifest intentionally does not hash itself. It validates the core run artifacts without creating recursive manifest content.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

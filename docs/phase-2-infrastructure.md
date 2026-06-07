@@ -662,6 +662,8 @@ phase-2h-component-aware-baseline-runner
 
 ### Phase 2I: Storage and Artifact QA
 
+Status: complete.
+
 Goal:
 
 Strengthen artifact validation before moving into full experiment execution.
@@ -681,6 +683,39 @@ Acceptance criteria:
 - missing artifacts are reported clearly,
 - repeated runs are handled according to a documented policy,
 - result-store abstraction remains compatible with the existing filesystem artifacts.
+
+Implemented outputs:
+
+- result-store validation API in `FileSystemResultsStore.validate_run_artifacts`,
+- deterministic artifact manifest model and writer in `src/avf/storage/results_store.py`,
+- automatic manifest writing from component-aware baseline runs,
+- `python -m avf validate-artifacts` CLI command,
+- rerun policy recorded as `deterministic_overwrite`,
+- tests in `tests/test_phase2i_artifact_qa.py`.
+
+Rerun policy:
+
+Phase 2I uses deterministic overwrite for repeated runs of the same task/config/component/tool-schema cell. The deterministic `run_id` already identifies that controlled cell, so rerunning the same cell writes the same artifact paths and should produce byte-equivalent trace, verification, metrics, report, and manifest files. Versioned rerun directories are deferred until Phase 3 introduces pilot runs, rerun QA notes, or non-deterministic external model adapters.
+
+Manifest layout:
+
+```text
+<artifact-root>/
+  traces/<run_id>.json
+  results/<run_id>.rule_based_success_criteria_v1.json
+  results/<run_id>.metrics.json
+  reports/<run_id>.md
+  manifests/<run_id>.manifest.json
+```
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2i_cli
+env PYTHONPATH=src python3 -m avf validate-artifacts --artifact-root /private/tmp/avf_phase2i_cli --run-id run_e4b4e294123506ad --write-manifest
+```
 
 Suggested branch name:
 
