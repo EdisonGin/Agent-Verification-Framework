@@ -20,11 +20,12 @@ Implemented:
 - Phase 2A: filesystem storage abstractions and component registry/factory,
 - Phase 2B: SQLite episodic memory backend,
 - Phase 2C: BM25 retrieval strategy,
-- Phase 2D: rule-based scheduler.
+- Phase 2D: rule-based scheduler,
+- Phase 2E: vector memory backend.
 
 Next planned phase:
 
-- Phase 2E: vector memory backend.
+- Phase 2F: embedding retrieval strategy.
 
 ## Documentation
 

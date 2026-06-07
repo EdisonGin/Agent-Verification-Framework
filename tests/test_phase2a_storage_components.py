@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from avf.agents.components import ComponentFactory, ComponentRegistry, build_component_bundle  # noqa: E402
+from avf.agents.memory import VectorMemory  # noqa: E402
 from avf.agents.scheduling import RuleBasedScheduler, SequentialScheduler  # noqa: E402
 from avf.contracts import MetricResult, RunTrace, ValidationError, VerificationResult  # noqa: E402
 from avf.orchestration import build_run_context, run_phase1_baseline  # noqa: E402
@@ -60,10 +61,19 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
 
         self.assertEqual(first.to_dict(), second.to_dict())
 
-    def test_component_registry_rejects_unimplemented_memory_variant(self) -> None:
+    def test_component_registry_resolves_vector_memory_backend(self) -> None:
         config = replace(self.component_config, memory_backend="vector")
+        bundle = ComponentRegistry().resolve(config)
 
-        with self.assertRaisesRegex(ValidationError, "memory_backend=vector; planned for Phase 2E"):
+        self.assertEqual(bundle.memory.variant, "vector")
+        self.assertEqual(bundle.memory.status, "available")
+        self.assertEqual(bundle.memory.planned_phase, "Phase 2E")
+        self.assertIsInstance(bundle.memory_module, VectorMemory)
+
+    def test_component_registry_rejects_unknown_memory_variant(self) -> None:
+        config = replace(self.component_config, memory_backend="redis")
+
+        with self.assertRaisesRegex(ValidationError, "memory_backend=redis"):
             ComponentRegistry().resolve(config)
 
     def test_component_registry_rejects_unimplemented_retrieval_variant(self) -> None:
