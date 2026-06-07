@@ -16,6 +16,7 @@ from avf.orchestration import (
     Phase3AExperimentResult,
     Phase3BPilotQAResult,
     Phase3CDatasetFreezeResult,
+    Phase3DReadinessReviewResult,
     build_run_context_from_files,
     freeze_phase3c_dataset_from_config,
     load_experiment_config,
@@ -23,6 +24,7 @@ from avf.orchestration import (
     run_phase2_integration_baseline,
     run_phase3a_full_factorial,
     run_phase3b_pilot_qa,
+    run_phase3d_readiness_review_from_config,
 )
 from avf.storage import FileSystemResultsStore
 from avf.tracing import read_run_trace
@@ -226,6 +228,37 @@ def build_parser() -> argparse.ArgumentParser:
         help="Human operator note to include in the dataset index.",
     )
 
+    review_phase3d = subparsers.add_parser(
+        "review-phase3d-readiness",
+        help="Review whether a results index database or dashboard is justified.",
+    )
+    review_phase3d.add_argument(
+        "--experiment-config",
+        required=True,
+        help="Path to the Phase 3 ExperimentConfig JSON fixture used for the frozen dataset.",
+    )
+    review_phase3d.add_argument(
+        "--artifact-root",
+        help="Artifact root containing the frozen dataset artifacts.",
+    )
+    review_phase3d.add_argument(
+        "--operator-notes",
+        default="Phase 3D results-index and dashboard readiness review.",
+        help="Human operator note to include in the decision record.",
+    )
+    review_phase3d.add_argument(
+        "--database-run-threshold",
+        type=int,
+        default=100,
+        help="Run-count threshold above which a SQLite read model should be planned.",
+    )
+    review_phase3d.add_argument(
+        "--database-bytes-threshold",
+        type=int,
+        default=50000000,
+        help="Artifact-byte threshold above which a SQLite read model should be planned.",
+    )
+
     return parser
 
 
@@ -375,6 +408,22 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase3c_freeze_cli_summary(result), indent=2, sort_keys=True))
         return 0 if result.validation.passed else 1
 
+    if args.command == "review-phase3d-readiness":
+        try:
+            result = run_phase3d_readiness_review_from_config(
+                experiment_config_path=Path(args.experiment_config),
+                artifact_root=Path(args.artifact_root) if args.artifact_root else None,
+                operator_notes=args.operator_notes,
+                database_run_threshold=args.database_run_threshold,
+                database_bytes_threshold=args.database_bytes_threshold,
+            )
+        except ValidationError as exc:
+            print(f"Phase 3D readiness review failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase3d_review_cli_summary(result), indent=2, sort_keys=True))
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -461,4 +510,21 @@ def _phase3c_freeze_cli_summary(result: Phase3CDatasetFreezeResult) -> Dict[str,
         "dataset_index": str(result.artifacts.dataset_index),
         "frozen_dataset_manifest": str(result.artifacts.frozen_dataset_manifest),
         "dataset_report": str(result.artifacts.dataset_report),
+    }
+
+
+def _phase3d_review_cli_summary(result: Phase3DReadinessReviewResult) -> Dict[str, object]:
+    return {
+        "experiment_id": result.experiment_id,
+        "dataset_id": result.dataset_id,
+        "filesystem_sufficient": result.results_index_decision["filesystem_sufficient"],
+        "database_recommended": result.results_index_decision["database_recommended"],
+        "database_decision": result.results_index_decision["database_decision"],
+        "dashboard_recommended_now": result.results_index_decision["dashboard_recommended_now"],
+        "dashboard_decision": result.results_index_decision["dashboard_decision"],
+        "storage_volume_review": str(result.artifacts.storage_volume_review),
+        "query_requirements": str(result.artifacts.query_requirements),
+        "dashboard_requirements": str(result.artifacts.dashboard_requirements),
+        "results_index_decision": str(result.artifacts.results_index_decision),
+        "review_report": str(result.artifacts.review_report),
     }

@@ -937,6 +937,36 @@ Consequences:
 - Analysis should consume `dataset_index.json` instead of rerunning the experiment.
 - Phase 3D remains responsible for deciding whether a results index database or dashboard is justified.
 
+### DEC-034: Keep Phase 3D Filesystem-First and Defer Dashboard Implementation
+
+Decision ID: DEC-034
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 3C produces a frozen dataset index and manifest. Phase 3D must decide whether the current artifact volume and query requirements justify implementing a results database or dashboard before analysis. The current frozen dataset contains eight included runs and can be consumed directly from `dataset_index.json`.
+
+Decision:
+
+Keep the current Phase 3D implementation filesystem-first. Write storage volume, query requirement, dashboard requirement, and results-index decision artifacts. Do not implement a database or dashboard for the current dataset. If later volume thresholds are exceeded, plan a read-only SQLite results index over frozen artifacts rather than replacing raw artifacts.
+
+Rationale:
+
+The current dataset is small enough for direct JSON/Markdown analysis, and the frozen dataset index already contains the run metadata, inclusion decisions, artifact paths, and hashes needed for Phase 4. A database or dashboard now would add implementation surface without improving dissertation evidence. The review artifacts still document the criteria and read-model policy for future scale.
+
+Consequences:
+
+- `review-phase3d-readiness` records the database/dashboard decision over frozen artifacts.
+- `storage_volume_review.json` records current artifact volume.
+- `query_requirements.json` records analysis filters, groupings, joins, and candidate views.
+- `results_index_decision.json` records that filesystem artifacts remain sufficient for the current dataset.
+- `dashboard_requirements.md` records dashboard scope based on real frozen dataset fields.
+- Any future database must be a read-only index over frozen filesystem artifacts.
+- Phase 4 analysis can start from `dataset_index.json`.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

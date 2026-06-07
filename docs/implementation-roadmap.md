@@ -120,6 +120,8 @@ Phase 3B adds the pilot QA gate before dataset freeze. It runs the current matri
 
 Phase 3C freezes the accepted artifact set by writing `dataset_index.json`, `frozen_dataset_manifest.json`, and `dataset_report.md`. The dataset index records run metadata, inclusion decisions, artifact paths, and hashes so analysis can consume the frozen dataset without rerunning experiments. Results-index databases and dashboard work remain Phase 3D or Phase 4 responsibilities.
 
+Phase 3D reviews the frozen dataset to decide whether additional indexing or dashboard work is justified. It writes storage volume, query requirement, dashboard requirement, and results-index decision artifacts. The current eight-run dataset remains suitable for direct `dataset_index.json` analysis, so no database or dashboard is implemented before Phase 4.
+
 Required outputs:
 
 - eight component configurations,

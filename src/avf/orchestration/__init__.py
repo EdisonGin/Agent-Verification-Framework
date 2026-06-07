@@ -16,14 +16,18 @@ __all__ = [
     "Phase3AExperimentResult",
     "Phase3BPilotQAResult",
     "Phase3CDatasetFreezeResult",
+    "Phase3DReadinessReviewResult",
     "QAValidationResult",
     "RerunRecord",
     "RunContext",
     "build_dataset_index",
     "build_frozen_dataset_manifest",
     "build_failure_notes",
+    "build_query_requirements",
+    "build_results_index_decision",
     "build_run_context",
     "build_run_context_from_files",
+    "build_storage_volume_review",
     "build_experiment_matrix",
     "freeze_phase3c_dataset",
     "freeze_phase3c_dataset_from_config",
@@ -32,6 +36,8 @@ __all__ = [
     "read_failure_notes",
     "read_rerun_records",
     "run_phase3b_pilot_qa",
+    "run_phase3d_readiness_review",
+    "run_phase3d_readiness_review_from_config",
     "run_phase3a_full_factorial",
     "run_phase2_integration_baseline",
     "run_component_aware_baseline",
@@ -87,6 +93,17 @@ def __getattr__(name: str) -> object:
         from . import dataset_freeze
 
         return getattr(dataset_freeze, name)
+    if name in {
+        "Phase3DReadinessReviewResult",
+        "build_query_requirements",
+        "build_results_index_decision",
+        "build_storage_volume_review",
+        "run_phase3d_readiness_review",
+        "run_phase3d_readiness_review_from_config",
+    }:
+        from . import readiness_review
+
+        return getattr(readiness_review, name)
     if name in {
         "FailureNote",
         "Phase3BPilotQAResult",

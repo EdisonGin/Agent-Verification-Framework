@@ -187,3 +187,14 @@ env PYTHONPATH=src python3 -c "from avf.orchestration import freeze_phase3c_data
 ```
 
 The Phase 3C freeze command reads an accepted Phase 3B artifact set and writes `dataset_index.json`, `frozen_dataset_manifest.json`, and `dataset_report.md` under `artifacts/experiments/<experiment_id>/`. The dataset index is the analysis entrypoint and includes run metadata, inclusion decisions, artifact paths, and SHA-256 hashes.
+
+Phase 3D validates results-index and dashboard readiness review:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3d_script PYTHONPATH=src ./scripts/run-phase3d-review.sh
+env PYTHONPATH=src python3 -m avf review-phase3d-readiness --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3d_script --operator-notes "Phase 3D CLI verification"
+env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase3d_readiness_review, run_phase3d_readiness_review_from_config; print('phase3d readiness review imports ok')"
+```
+
+The Phase 3D review writes `storage_volume_review.json`, `query_requirements.json`, `results_index_decision.json`, `dashboard_requirements.md`, and `phase3d_review.md` under `artifacts/experiments/<experiment_id>/`. The current decision keeps the filesystem-backed dataset index as sufficient and defers database/dashboard implementation.
