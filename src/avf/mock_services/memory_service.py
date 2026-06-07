@@ -6,6 +6,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
 
 from avf.agents.memory import MemoryModule
+from avf.agents.retrieval import RetrievalModule
 from avf.agents.tools import ToolClient
 from avf.contracts import ToolCall, ToolResult
 
@@ -34,9 +35,11 @@ class MockMemoryService(ToolClient):
         self,
         perturbations: Optional[PerturbationController] = None,
         memory_backend: Optional[MemoryModule] = None,
+        retrieval_module: Optional[RetrievalModule] = None,
     ) -> None:
         self.perturbations = perturbations or NoPerturbationController()
         self.memory_backend = memory_backend
+        self.retrieval_module = retrieval_module
         self._records: List[MemoryRecord] = []
         self.calls: List[ToolCall] = []
 
@@ -77,6 +80,9 @@ class MockMemoryService(ToolClient):
                 record_id = self.memory_backend.write(key, value, dict(metadata))
             except ValueError as exc:
                 return self._error_result(tool_call, "invalid_arguments", str(exc))
+            record = MemoryRecord(record_id=record_id, key=key, value=value, metadata=dict(metadata))
+            self._records.append(record)
+            self._refresh_retrieval_index()
             return ToolResult(
                 tool_call_id=tool_call.tool_call_id,
                 status="success",
@@ -93,6 +99,7 @@ class MockMemoryService(ToolClient):
             metadata=dict(metadata),
         )
         self._records.append(record)
+        self._refresh_retrieval_index()
         return ToolResult(
             tool_call_id=tool_call.tool_call_id,
             status="success",
@@ -113,6 +120,21 @@ class MockMemoryService(ToolClient):
             return self._error_result(tool_call, "invalid_arguments", "memory.query metadata_filter must be an object")
         if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
             return self._error_result(tool_call, "invalid_arguments", "memory.query limit must be a positive integer")
+
+        if self.retrieval_module is not None:
+            try:
+                retrieval_results = self.retrieval_module.query(query, limit, metadata_filter)
+            except ValueError as exc:
+                return self._error_result(tool_call, "invalid_arguments", str(exc))
+            records = [dict(result["source"]) for result in retrieval_results if isinstance(result.get("source"), dict)]
+            return ToolResult(
+                tool_call_id=tool_call.tool_call_id,
+                status="success",
+                output={"ok": True, "records": records, "retrieval_results": retrieval_results},
+                error=None,
+                latency_ms=0,
+                perturbation_applied=None,
+            )
 
         if self.memory_backend is not None:
             try:
@@ -144,6 +166,23 @@ class MockMemoryService(ToolClient):
 
     def _metadata_matches(self, metadata: Dict[str, Any], metadata_filter: Dict[str, Any]) -> bool:
         return all(metadata.get(key) == value for key, value in metadata_filter.items())
+
+    def _refresh_retrieval_index(self) -> None:
+        if self.retrieval_module is None:
+            return
+        self.retrieval_module.index([self._record_to_document(record) for record in self._records])
+
+    def _record_to_document(self, record: MemoryRecord) -> Dict[str, Any]:
+        source = record.to_dict()
+        return {
+            "document_id": record.record_id,
+            "text": self._record_text(record),
+            "metadata": dict(record.metadata),
+            "source": source,
+        }
+
+    def _record_text(self, record: MemoryRecord) -> str:
+        return f"{record.key} {record.value}"
 
     def _error_result(self, tool_call: ToolCall, error_type: str, message: str) -> ToolResult:
         return ToolResult(

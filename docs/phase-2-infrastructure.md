@@ -219,7 +219,7 @@ Implemented outputs:
 - baseline-run integration with the filesystem results store,
 - tests in `tests/test_phase2a_storage_components.py`.
 
-Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaces the SQLite memory descriptor with a concrete implementation.
+Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaces the BM25 retrieval descriptor with a concrete implementation.
 
 Verification:
 
@@ -298,6 +298,8 @@ phase-2b-sqlite-memory-backend
 
 ### Phase 2C: BM25 Retrieval Strategy
 
+Status: complete.
+
 Goal:
 
 Implement the first real retrieval/search strategy.
@@ -322,6 +324,27 @@ Implementation notes:
 - Prefer dependency-light implementation unless a strong reason emerges.
 - If the scope of BM25 grows, document whether the implementation is full BM25 or a simplified deterministic approximation.
 - Keep the output shape stable for later embedding retrieval.
+
+Implemented outputs:
+
+- BM25 retrieval implementation in `src/avf/agents/retrieval/bm25.py`,
+- explicit retrieval interface with document indexing and metadata-filtered query support,
+- deterministic Okapi BM25 ranking with index-order tie-breaking,
+- component registry update marking `retrieval_strategy=bm25` as available,
+- mock memory service integration so `memory.query` uses the selected retrieval module for ranking,
+- baseline-run integration using the resolved BM25 retrieval module,
+- tests in `tests/test_bm25_retrieval.py` and `tests/test_phase2a_storage_components.py`.
+
+Phase 2C keeps retrieval separate from memory storage. SQLite stores records; BM25 indexes record text and ranks query results through the retrieval interface.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2c_cli
+env PYTHONPATH=src python3 -c "from avf.agents.retrieval import BM25Retriever; from avf.agents.components import build_component_bundle; print('phase2c imports ok')"
+```
 
 Suggested branch name:
 

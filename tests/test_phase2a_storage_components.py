@@ -47,8 +47,9 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
         self.assertEqual(bundle.memory.planned_phase, "Phase 2B")
         self.assertIsNotNone(bundle.memory_module)
         self.assertEqual(bundle.retrieval.variant, "bm25")
-        self.assertEqual(bundle.retrieval.status, "deferred")
+        self.assertEqual(bundle.retrieval.status, "available")
         self.assertEqual(bundle.retrieval.planned_phase, "Phase 2C")
+        self.assertIsNotNone(bundle.retrieval_module)
         self.assertEqual(bundle.scheduling.variant, "sequential")
         self.assertEqual(bundle.scheduling.status, "available")
         self.assertIsInstance(bundle.scheduler, SequentialScheduler)
@@ -129,6 +130,7 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
         self.assertTrue(result.metrics.task_success)
         self.assertEqual(result.component_bundle.config_id, "A1_B1_C1")
         self.assertEqual(result.component_bundle.memory.status, "available")
+        self.assertEqual(result.component_bundle.retrieval.status, "available")
         self.assertEqual(result.component_bundle.scheduling.variant, "sequential")
 
     def test_baseline_trace_records_selected_component_config(self) -> None:
@@ -151,6 +153,7 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
 
         self.assertEqual(len(component_events), 1)
         self.assertEqual(component_events[0].payload["component_config"]["memory_backend"], "sqlite")
+        self.assertEqual(component_events[0].payload["component_config"]["retrieval_strategy"], "bm25")
 
 
 if __name__ == "__main__":

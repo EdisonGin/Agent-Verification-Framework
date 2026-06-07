@@ -261,7 +261,7 @@ Phase 2A also introduces the SUT component registry and factory:
 - the existing `A1_B1_C1` cell resolves deterministically,
 - sequential scheduling is available as the current concrete scheduler,
 - SQLite memory is available as a concrete memory backend from Phase 2B,
-- BM25 retrieval is recorded as a deferred descriptor until its real implementation is added,
+- BM25 retrieval is available as a concrete retrieval strategy from Phase 2C,
 - unsupported variants fail explicitly rather than silently falling back to baseline behavior.
 
 Phase 2B introduces the first real SUT memory database:
@@ -270,6 +270,13 @@ Phase 2B introduces the first real SUT memory database:
 - memory records are persisted through the memory interface,
 - the mock memory tool service can delegate `memory.write` and `memory.query` to the SQLite backend,
 - the filesystem results store is unchanged and remains separate from SUT memory storage.
+
+Phase 2C introduces the first real SUT retrieval strategy:
+
+- `BM25Retriever` implements the shared retrieval interface,
+- the implementation uses dependency-light Okapi BM25 scoring,
+- memory records are indexed as retrieval documents by the mock memory tool service,
+- `memory.query` uses the selected retrieval module for deterministic ranking when `retrieval_strategy=bm25`.
 
 ## Thin-Slice Implementation
 
