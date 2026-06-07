@@ -25,11 +25,12 @@ Implemented:
 - Phase 2F: embedding retrieval strategy,
 - Phase 2G: full component configuration fixture set,
 - Phase 2H: component-aware baseline runner,
-- Phase 2I: storage and artifact QA.
+- Phase 2I: storage and artifact QA,
+- Phase 2J: Phase 2 integration baseline.
 
 Next planned phase:
 
-- Phase 2J: Phase 2 integration baseline.
+- Phase 3: experimental execution and iteration.
 
 ## Documentation
 

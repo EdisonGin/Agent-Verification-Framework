@@ -725,6 +725,8 @@ phase-2i-storage-artifact-qa
 
 ### Phase 2J: Phase 2 Integration Baseline
 
+Status: complete.
+
 Goal:
 
 Run a small component-aware integration baseline before Phase 3 full experimental execution.
@@ -743,6 +745,27 @@ Acceptance criteria:
 - artifacts are generated and validated,
 - report explains selected component differences,
 - full `2^3` experiment execution is ready for Phase 3.
+
+Implemented outputs:
+
+- `run_phase2_integration_baseline` in `src/avf/orchestration/phase2_integration.py`,
+- `python -m avf run-phase2-integration` CLI command,
+- `scripts/run-phase2-integration.sh` reproducible script,
+- default integration cells `A1_B1_C1` and `A2_B2_C2`,
+- per-run trace, verification, metrics, report, and manifest artifacts,
+- `ExperimentResult` comparison summary under `comparisons/`,
+- Phase 2 exit report under `reports/`,
+- tests in `tests/test_phase2j_integration_baseline.py`.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-phase2-integration --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --component test_data/components/A1_B1_C1.json --component test_data/components/A2_B2_C2.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2j_cli
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase2j_script PYTHONPATH=src ./scripts/run-phase2-integration.sh
+env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase2_integration_baseline; print('phase2j integration import ok')"
+```
 
 Suggested branch name:
 

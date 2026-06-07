@@ -145,3 +145,12 @@ env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_rec
 env PYTHONPATH=src python3 -m avf validate-artifacts --artifact-root /private/tmp/avf_phase2i_cli --run-id run_e4b4e294123506ad --write-manifest
 env PYTHONPATH=src python3 -c "from avf.storage import ArtifactManifest, ArtifactValidationResult, FileSystemResultsStore; print('phase2i storage qa import ok')"
 ```
+
+Phase 2J validates the component-aware integration baseline:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf run-phase2-integration --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --component test_data/components/A1_B1_C1.json --component test_data/components/A2_B2_C2.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2j_cli
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase2j_script PYTHONPATH=src ./scripts/run-phase2-integration.sh
+env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase2_integration_baseline; print('phase2j integration import ok')"
+```
