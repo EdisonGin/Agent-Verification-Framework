@@ -615,6 +615,8 @@ phase-2g-factorial-component-fixtures
 
 ### Phase 2H: Component-Aware Baseline Runner
 
+Status: complete.
+
 Goal:
 
 Ensure the baseline run pipeline uses component bundles rather than hard-coded baseline components.
@@ -632,6 +634,25 @@ Acceptance criteria:
 - run artifacts identify selected component variants,
 - repeated runs remain reproducible,
 - changing component config changes component selection without changing task fixtures.
+
+Implemented outputs:
+
+- `run_component_aware_baseline` in `src/avf/orchestration/baseline_run.py`,
+- compatibility wrapper for the existing `run_phase1_baseline` API,
+- CLI `run-baseline` execution through the component-aware runner,
+- component bundle metadata in CLI summaries,
+- component bundle trace metadata through a deterministic `stage=component_bundle` event,
+- component selection table in Markdown reports,
+- tests for distinct `A1_B1_C1`, `A1_B2_C2`, and `A2_B2_C2` component cells in `tests/test_phase2h_component_aware_baseline.py`.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2h_a1
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A2_B2_C2.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2h_a2
+```
 
 Suggested branch name:
 

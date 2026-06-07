@@ -126,3 +126,12 @@ env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
 env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2g_cli
 env PYTHONPATH=src python3 -c "from pathlib import Path; from avf.storage import FileSystemTestDataRepository; from avf.agents.components import ComponentRegistry; repo = FileSystemTestDataRepository(Path('test_data')); components = repo.load_tree()['components']; registry = ComponentRegistry(); [registry.resolve(component) for component in components]; print(f'validated {len(components)} component fixtures')"
 ```
+
+Phase 2H validates component-aware baseline execution:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2h_a1
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A2_B2_C2.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2h_a2
+env PYTHONPATH=src python3 -c "from avf.orchestration import run_component_aware_baseline; print('phase2h runner import ok')"
+```

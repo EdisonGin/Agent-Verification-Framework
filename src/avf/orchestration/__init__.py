@@ -11,6 +11,7 @@ __all__ = [
     "RunContext",
     "build_run_context",
     "build_run_context_from_files",
+    "run_component_aware_baseline",
     "deterministic_run_id",
     "load_component_config",
     "load_run_config",
@@ -21,7 +22,12 @@ __all__ = [
 
 
 def __getattr__(name: str) -> object:
-    if name in {"BaselineRunArtifactPaths", "BaselineRunResult", "run_phase1_baseline"}:
+    if name in {
+        "BaselineRunArtifactPaths",
+        "BaselineRunResult",
+        "run_component_aware_baseline",
+        "run_phase1_baseline",
+    }:
         from . import baseline_run
 
         return getattr(baseline_run, name)

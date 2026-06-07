@@ -92,7 +92,7 @@ Goal: implement interchangeable memory, retrieval, and scheduling components whi
 
 Detailed planning for this phase is maintained in `phase-2-infrastructure.md`.
 
-Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a results database dependency. Phase 2B introduces SQLite as a SUT memory backend, not as the experiment results store. Phase 2C introduces BM25 as the first concrete retrieval strategy. Phase 2D introduces rule-based scheduling as the second scheduling factor level. Phase 2E introduces vector memory with deterministic local sparse vectors. Phase 2F introduces embedding retrieval with the same deterministic local embedding utility. Phase 2G adds the complete `2^3` `ComponentConfig` fixture set for the dissertation factor matrix.
+Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a results database dependency. Phase 2B introduces SQLite as a SUT memory backend, not as the experiment results store. Phase 2C introduces BM25 as the first concrete retrieval strategy. Phase 2D introduces rule-based scheduling as the second scheduling factor level. Phase 2E introduces vector memory with deterministic local sparse vectors. Phase 2F introduces embedding retrieval with the same deterministic local embedding utility. Phase 2G adds the complete `2^3` `ComponentConfig` fixture set for the dissertation factor matrix. Phase 2H wires the baseline run pipeline to those resolved component bundles and records selected variants in artifacts.
 
 Required factors and fixture coding:
 

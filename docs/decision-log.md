@@ -760,6 +760,35 @@ Consequences:
 - Fixture validation and registry tests cover every cell.
 - No task, tool, trace, verification, metric, or report schema changes are introduced by Phase 2G.
 
+### DEC-028: Record Component-Aware Runner Selection in Artifacts
+
+Decision ID: DEC-028
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2H requires `python -m avf run-baseline` to execute through the selected `ComponentConfig` cell and make the selected variants visible in run artifacts. The framework already has stable trace, verification, metric, and report schemas from Phase 1, so this phase should avoid schema churn unless it is necessary.
+
+Decision:
+
+Resolve `ComponentConfig` to a `ComponentBundle` inside the baseline runner, inject the selected scheduler into the SUT agent, inject selected memory and retrieval modules into the mock memory service, and record the resolved bundle in trace, CLI, and Markdown report outputs. Keep the persisted `RunTrace`, `VerificationResult`, `MetricResult`, and report artifact file layout unchanged.
+
+Rationale:
+
+This makes component selection auditable for dissertation experiments while preserving comparability with earlier artifacts. The trace event approach records implementation-level evidence without adding new top-level schema fields or changing task/tool contracts.
+
+Consequences:
+
+- `run-baseline` changes behavior by selecting concrete modules from `ComponentConfig`.
+- A deterministic `stage=component_bundle` trace event records the resolved descriptors.
+- CLI summaries expose `component_config_id` and `component_bundle`.
+- Markdown reports include selected memory, retrieval, and scheduling variants.
+- Repeated runs remain byte-reproducible for the same task/config/component/tool fixtures.
+- Changing component fixtures changes selected components without changing task or tool fixtures.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

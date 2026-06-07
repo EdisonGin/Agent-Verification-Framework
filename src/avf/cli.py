@@ -10,7 +10,7 @@ from typing import Dict, Iterable, Optional
 
 from avf.contracts import TaskCase, ValidationError
 from avf.contracts.fixture_loader import load_json, validate_fixture_tree
-from avf.orchestration import BaselineRunResult, build_run_context_from_files, run_phase1_baseline
+from avf.orchestration import BaselineRunResult, build_run_context_from_files, run_component_aware_baseline
 from avf.tracing import read_run_trace
 from avf.verification import RuleBasedVerifier, VerificationResultWriter
 
@@ -137,7 +137,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
 
     if args.command == "run-baseline":
         try:
-            result = run_phase1_baseline(
+            result = run_component_aware_baseline(
                 task_path=Path(args.task),
                 run_config_path=Path(args.config),
                 component_config_path=Path(args.components),
@@ -161,5 +161,7 @@ def _baseline_run_cli_summary(result: BaselineRunResult) -> Dict[str, object]:
         "status": result.trace.status,
         "task_success": result.metrics.task_success,
         "verification_passed": result.verification.passed,
+        "component_config_id": result.component_bundle.config_id,
+        "component_bundle": result.component_bundle.to_dict(),
         "artifacts": result.artifact_paths.to_dict(),
     }
