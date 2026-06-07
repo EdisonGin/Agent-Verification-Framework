@@ -1,4 +1,4 @@
-"""Markdown reporting for Phase 1I."""
+"""Markdown reporting for reproducible baseline runs."""
 
 from .markdown import MarkdownReportWriter, build_run_report, write_run_report
 

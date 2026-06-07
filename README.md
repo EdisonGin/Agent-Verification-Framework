@@ -23,11 +23,12 @@ Implemented:
 - Phase 2D: rule-based scheduler,
 - Phase 2E: vector memory backend,
 - Phase 2F: embedding retrieval strategy,
-- Phase 2G: full component configuration fixture set.
+- Phase 2G: full component configuration fixture set,
+- Phase 2H: component-aware baseline runner.
 
 Next planned phase:
 
-- Phase 2H: component-aware baseline runner.
+- Phase 2I: storage and artifact QA.
 
 ## Documentation
 

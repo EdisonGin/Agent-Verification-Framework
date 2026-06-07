@@ -720,6 +720,13 @@ After Phase 2F, the currently implemented component levels are:
 
 After Phase 2G, every `2^3` `ComponentConfig` fixture resolves to an implemented component bundle. The schema is unchanged; Phase 2G adds fixture coverage and registry validation across all factor cells.
 
+After Phase 2H, baseline-run artifacts include the resolved component bundle without changing the persisted contract schemas:
+
+- `RunTrace.component_config_id` identifies the selected fixture,
+- an `agent_step` trace event with `stage=component_bundle` records resolved memory, retrieval, and scheduling descriptors,
+- the CLI summary includes `component_config_id` and `component_bundle`,
+- the Markdown report includes a component selection table.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

@@ -309,6 +309,13 @@ Phase 2G completes the component fixture matrix:
 - factor IDs map directly to memory, retrieval, and scheduling selections,
 - switching cells does not require task fixture or tool schema changes.
 
+Phase 2H makes the baseline runner component-aware:
+
+- `python -m avf run-baseline` resolves `ComponentConfig` through the component factory,
+- the selected scheduler is passed into the baseline SUT agent,
+- the selected memory and retrieval modules are passed into the mock memory service,
+- trace, CLI, and Markdown report outputs identify the selected component bundle.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:

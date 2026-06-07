@@ -1,4 +1,4 @@
-"""Phase 1I reproducible baseline run orchestration."""
+"""Reproducible baseline run orchestration."""
 
 from __future__ import annotations
 
@@ -8,12 +8,12 @@ from typing import Dict, List, Optional
 
 from avf.agents import BaselineSUTAgent
 from avf.agents.components import ComponentBundle, build_component_bundle
-from avf.contracts import MetricResult, RunTrace, VerificationResult
+from avf.contracts import MetricResult, RunTrace, TraceEvent, VerificationResult
 from avf.metrics import calculate_metric_result
 from avf.mock_services import MockMemoryService
 from avf.reporting.markdown import build_run_report
 from avf.storage import FileSystemResultsStore
-from avf.tracing import build_run_trace_from_agent_result
+from avf.tracing import build_run_trace, build_run_trace_from_agent_result
 from avf.verification import RuleBasedVerifier
 
 from .run_context import RunContext, build_run_context_from_files
@@ -21,7 +21,7 @@ from .run_context import RunContext, build_run_context_from_files
 
 @dataclass(frozen=True)
 class BaselineRunArtifactPaths:
-    """Paths written by one Phase 1I baseline run."""
+    """Paths written by one baseline run."""
 
     trace: Path
     verification: Path
@@ -63,7 +63,29 @@ def run_phase1_baseline(
     tool_spec_paths: List[Path],
     artifact_root: Optional[Path] = None,
 ) -> BaselineRunResult:
-    """Execute the deterministic Phase 1 baseline and write all artifacts."""
+    """Execute the deterministic baseline and write all artifacts.
+
+    This compatibility wrapper preserves the Phase 1I public function name.
+    The implementation is component-aware from Phase 2H onward.
+    """
+
+    return run_component_aware_baseline(
+        task_path=task_path,
+        run_config_path=run_config_path,
+        component_config_path=component_config_path,
+        tool_spec_paths=tool_spec_paths,
+        artifact_root=artifact_root,
+    )
+
+
+def run_component_aware_baseline(
+    task_path: Path,
+    run_config_path: Path,
+    component_config_path: Path,
+    tool_spec_paths: List[Path],
+    artifact_root: Optional[Path] = None,
+) -> BaselineRunResult:
+    """Execute the deterministic baseline using ComponentConfig-selected modules."""
 
     run_context = build_run_context_from_files(
         task_path=task_path,
@@ -81,7 +103,15 @@ def run_phase1_baseline(
             retrieval_module=component_bundle.retrieval_module,
         ),
     )
-    trace = build_run_trace_from_agent_result(run_context, agent_result)
+    agent_trace = build_run_trace_from_agent_result(run_context, agent_result)
+    component_event = _component_bundle_event(run_context, component_bundle)
+    trace = build_run_trace(
+        run_context=run_context,
+        events=[component_event, *agent_trace.events],
+        status=agent_trace.status,
+        started_at=component_event.timestamp,
+        completed_at=agent_trace.completed_at,
+    )
     verification = RuleBasedVerifier().verify(run_context.task, trace)
     metrics = calculate_metric_result(trace, verification)
 
@@ -100,6 +130,7 @@ def run_phase1_baseline(
         trace=trace,
         verification=verification,
         metrics=metrics,
+        component_bundle=component_bundle.to_dict(),
         artifact_paths=results_store.relative_paths(asdict(artifact_paths)),
     )
     report_path = results_store.write_report(trace.run_id, report)
@@ -116,4 +147,19 @@ def run_phase1_baseline(
             metrics=metrics_path,
             report=report_path,
         ),
+    )
+
+
+def _component_bundle_event(run_context: RunContext, component_bundle: ComponentBundle) -> TraceEvent:
+    return TraceEvent(
+        event_id=f"{run_context.run_id}_event_000",
+        run_id=run_context.run_id,
+        event_type="agent_step",
+        step_index=0,
+        timestamp="1970-01-01T00:00:00Z",
+        payload={
+            "stage": "component_bundle",
+            "component_config": run_context.component_config.to_dict(),
+            "component_bundle": component_bundle.to_dict(),
+        },
     )

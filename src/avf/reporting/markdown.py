@@ -15,11 +15,12 @@ def build_run_report(
     verification: VerificationResult,
     metrics: MetricResult,
     artifact_paths: Optional[Dict[str, str]] = None,
+    component_bundle: Optional[Dict[str, object]] = None,
 ) -> str:
     paths = artifact_paths or {}
     tool_names = observed_tool_names(trace)
     lines = [
-        "# Phase 1 Baseline Run Report",
+        "# Component-Aware Baseline Run Report",
         "",
         "## Run Summary",
         "",
@@ -35,6 +36,7 @@ def build_run_report(
         f"| Verifier | `{verification.verifier_id}` |",
         f"| Verifier passed | `{str(verification.passed).lower()}` |",
         "",
+        *_component_selection_lines(component_bundle),
         "## Tool Calls",
         "",
         "| Index | Tool |",
@@ -108,9 +110,35 @@ def write_run_report(
     metrics: MetricResult,
     report_dir: Path,
     artifact_paths: Optional[Dict[str, str]] = None,
+    component_bundle: Optional[Dict[str, object]] = None,
 ) -> Path:
-    content = build_run_report(task, trace, verification, metrics, artifact_paths)
+    content = build_run_report(task, trace, verification, metrics, artifact_paths, component_bundle)
     return MarkdownReportWriter(report_dir).write(trace.run_id, content)
+
+
+def _component_selection_lines(component_bundle: Optional[Dict[str, object]]) -> list[str]:
+    if not component_bundle:
+        return []
+
+    lines = [
+        "## Component Selection",
+        "",
+        "| Family | Variant | Implementation | Status |",
+        "|---|---|---|---|",
+    ]
+    for family in ("memory", "retrieval", "scheduling"):
+        descriptor = component_bundle.get(family)
+        if not isinstance(descriptor, dict):
+            continue
+        lines.append(
+            "| "
+            f"`{family}` | "
+            f"`{descriptor.get('variant', 'unknown')}` | "
+            f"`{descriptor.get('implementation_id', 'unknown')}` | "
+            f"`{descriptor.get('status', 'unknown')}` |"
+        )
+    lines.append("")
+    return lines
 
 
 def _format_optional_int(value: Optional[int]) -> str:

@@ -250,6 +250,13 @@ Phase 2E implementation:
 - vector search ranks records by cosine similarity without a hosted embedding API,
 - vector memory exposes the same write, read, and search methods as SQLite memory.
 
+Phase 2H implementation:
+
+- the baseline runner constructs the SUT from the resolved `ComponentBundle`,
+- scheduler, memory, and retrieval modules are selected by `ComponentConfig`,
+- the same task, run config, and tool fixtures are reused across component cells,
+- selected component variants are recorded in trace, CLI, and report outputs.
+
 ## Out-of-Scope for Initial Dissertation Factorial Design
 
 The SUT diagram includes additional useful variants. These are documented but deferred unless time allows:
