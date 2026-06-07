@@ -27,11 +27,12 @@ Implemented:
 - Phase 2H: component-aware baseline runner,
 - Phase 2I: storage and artifact QA,
 - Phase 2J: Phase 2 integration baseline,
-- Phase 3A: experiment matrix and full factorial runner.
+- Phase 3A: experiment matrix and full factorial runner,
+- Phase 3B: pilot QA, rerun records, and failure-note templates.
 
 Next planned phase:
 
-- Phase 3B: pilot QA and rerun records.
+- Phase 3C: dataset freeze.
 
 ## Documentation
 
@@ -76,6 +77,12 @@ Run the Phase 3A full factorial experiment:
 
 ```text
 ./scripts/run-phase3a-experiment.sh
+```
+
+Run the Phase 3B pilot QA workflow:
+
+```text
+./scripts/run-phase3b-pilot.sh
 ```
 
 ## Package Layout

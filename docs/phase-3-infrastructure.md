@@ -387,6 +387,8 @@ phase-3a-experiment-matrix-runner
 
 ### Phase 3B: Pilot QA and Rerun Records
 
+Status: complete.
+
 Goal:
 
 Add the QA process required before generating the final dataset.
@@ -405,6 +407,31 @@ Acceptance criteria:
 - rerun records can be written and validated,
 - failures can be classified as task, verifier, artifact, or infrastructure failures,
 - dataset execution is blocked if unresolved infrastructure failures remain.
+
+Implemented outputs:
+
+- `src/avf/orchestration/pilot_qa.py` defines the Phase 3B QA layer,
+- `run_phase3b_pilot_qa` runs the Phase 3A matrix in pilot mode and writes QA artifacts,
+- `RerunRecord` stores rerun intent, decision, operator notes, timestamp, and commit hash,
+- `FailureNote` classifies pilot failures as `task_failure`, `verifier_failure`, `artifact_failure`, or `infrastructure_failure`,
+- `failure_note_templates` documents default dataset decisions for each failure class,
+- `validate_dataset_execution_gate` blocks dataset execution when unresolved infrastructure failures remain,
+- `python3 -m avf run-phase3b-pilot` exposes the pilot workflow through the CLI,
+- `scripts/run-phase3b-pilot.sh` provides the reproducible local entrypoint,
+- Phase 3B writes `pilot_log.md`, `rerun_records.json`, `failure_notes.json`, `failure_notes.md`, and `pilot_qa_summary.json` under `artifacts/experiments/<experiment_id>/`,
+- tests cover pilot artifact generation, rerun record write/read/validation, failure class validation, infrastructure failure blocking, CLI execution, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-phase3b-pilot --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3b_cli --operator-notes "Phase 3B CLI verification" --commit-hash phase3b_verify
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3b_script PYTHONPATH=src ./scripts/run-phase3b-pilot.sh
+env PYTHONPATH=src python3 -c "from avf.orchestration import FailureNote, RerunRecord, run_phase3b_pilot_qa; print('phase3b pilot qa imports ok')"
+```
+
+Phase 3B does not freeze the dataset. It records pilot QA evidence and gates later dataset execution. Phase 3C remains responsible for producing the dataset index, frozen dataset manifest, and dataset report.
 
 Suggested branch name:
 

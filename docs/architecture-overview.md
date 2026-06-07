@@ -341,6 +341,16 @@ Phase 3A adds the experiment matrix boundary:
 
 This layer does not introduce a database, dashboard, new verifier, or new SUT component. It coordinates already validated Phase 2 components into the first full factorial execution.
 
+Phase 3B adds the pilot QA boundary:
+
+- `run-phase3b-pilot` executes the current matrix in pilot mode,
+- `pilot_log.md` records timestamp, commit hash, experiment config path, expected/completed run counts, validation summary, limitations, operator notes, and the pilot decision,
+- `rerun_records.json` records rerun intent and remains valid when no reruns are required,
+- `failure_notes.json` and `failure_notes.md` classify task, verifier, artifact, and infrastructure failures,
+- the dataset-execution gate blocks progression when unresolved infrastructure failures remain.
+
+Phase 3B is an audit and QA layer over existing artifacts. It does not change agent behavior, task schemas, verifier logic, metric definitions, the results store backend, or dashboard timing.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:
