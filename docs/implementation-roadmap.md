@@ -92,15 +92,15 @@ Goal: implement interchangeable memory, retrieval, and scheduling components whi
 
 Detailed planning for this phase is maintained in `phase-2-infrastructure.md`.
 
-Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a results database dependency. Phase 2B introduces SQLite as a SUT memory backend, not as the experiment results store. Phase 2C introduces BM25 as the first concrete retrieval strategy. Phase 2D introduces rule-based scheduling as the second scheduling factor level. Phase 2E introduces vector memory with deterministic local sparse vectors. Phase 2F introduces embedding retrieval with the same deterministic local embedding utility.
+Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a results database dependency. Phase 2B introduces SQLite as a SUT memory backend, not as the experiment results store. Phase 2C introduces BM25 as the first concrete retrieval strategy. Phase 2D introduces rule-based scheduling as the second scheduling factor level. Phase 2E introduces vector memory with deterministic local sparse vectors. Phase 2F introduces embedding retrieval with the same deterministic local embedding utility. Phase 2G adds the complete `2^3` `ComponentConfig` fixture set for the dissertation factor matrix.
 
-Required factors:
+Required factors and fixture coding:
 
-| Factor | Level 1 | Level 2 |
-|---|---|---|
-| Memory backend | SQLite-backed episodic memory | Vector-index-backed episodic memory |
-| Retrieval strategy | BM25 retrieval | Embedding-based retrieval |
-| Scheduling policy | Sequential execution | Rule-based prioritisation |
+| Factor | ComponentConfig field | Level 1 | Level 2 |
+|---|---|---|---|
+| A: memory backend | `memory_backend` | `A1=sqlite` | `A2=vector` |
+| B: retrieval strategy | `retrieval_strategy` | `B1=bm25` | `B2=embedding` |
+| C: scheduling policy | `scheduling_policy` | `C1=sequential` | `C2=rule_based` |
 
 Additional base-agent variants shown in the SUT diagram, including file/Redis memory, hybrid retrieval, RAG, DAG scheduling, and parallel scheduling, are deferred unless needed as extensions. The dissertation's core experimental design remains the two-level factors above.
 

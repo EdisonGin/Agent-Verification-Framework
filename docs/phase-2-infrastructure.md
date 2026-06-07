@@ -141,7 +141,7 @@ A2_B2_C1  vector memory + embedding retrieval + sequential scheduling
 A2_B2_C2  vector memory + embedding retrieval + rule-based scheduling
 ```
 
-The existing `A1_B1_C1` fixture is the starting cell and must remain valid.
+The original `A1_B1_C1` fixture is the baseline cell and must remain valid. Phase 2G adds the remaining seven cells while preserving the same `ComponentConfig` schema.
 
 ## Planned Package Structure
 
@@ -219,7 +219,7 @@ Implemented outputs:
 - baseline-run integration with the filesystem results store,
 - tests in `tests/test_phase2a_storage_components.py`.
 
-Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D added the rule-based scheduler as the second scheduling factor level. Phase 2E added vector memory as the second memory factor level. Phase 2F adds embedding retrieval as the second retrieval factor level.
+Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D added the rule-based scheduler as the second scheduling factor level. Phase 2E added vector memory as the second memory factor level. Phase 2F added embedding retrieval as the second retrieval factor level. Phase 2G added the complete factorial fixture set over those implemented levels.
 
 Verification:
 
@@ -540,6 +540,8 @@ phase-2f-embedding-retrieval
 
 ### Phase 2G: Full Component Configuration Fixture Set
 
+Status: complete.
+
 Goal:
 
 Create the complete `2^3` component fixture set required for matched experiments.
@@ -557,6 +559,53 @@ Acceptance criteria:
 - every fixture resolves to an implemented component bundle,
 - fixture IDs use consistent factor naming,
 - no task or tool schema changes are required to switch cells.
+
+Implemented outputs:
+
+- component fixtures:
+  - `test_data/components/A1_B1_C1.json`,
+  - `test_data/components/A1_B1_C2.json`,
+  - `test_data/components/A1_B2_C1.json`,
+  - `test_data/components/A1_B2_C2.json`,
+  - `test_data/components/A2_B1_C1.json`,
+  - `test_data/components/A2_B1_C2.json`,
+  - `test_data/components/A2_B2_C1.json`,
+  - `test_data/components/A2_B2_C2.json`,
+- all fixtures use the same `ComponentConfig` schema,
+- fixture loading and registry resolution tests in `tests/test_phase2g_component_fixtures.py`,
+- updated repository fixture-count expectation in `tests/test_phase2a_storage_components.py`.
+
+Factor coding:
+
+| Code | ComponentConfig field | Value |
+|---|---|---|
+| `A1` | `memory_backend` | `sqlite` |
+| `A2` | `memory_backend` | `vector` |
+| `B1` | `retrieval_strategy` | `bm25` |
+| `B2` | `retrieval_strategy` | `embedding` |
+| `C1` | `scheduling_policy` | `sequential` |
+| `C2` | `scheduling_policy` | `rule_based` |
+
+Fixture matrix:
+
+| Fixture ID | Memory backend | Retrieval strategy | Scheduling policy |
+|---|---|---|---|
+| `A1_B1_C1` | `sqlite` | `bm25` | `sequential` |
+| `A1_B1_C2` | `sqlite` | `bm25` | `rule_based` |
+| `A1_B2_C1` | `sqlite` | `embedding` | `sequential` |
+| `A1_B2_C2` | `sqlite` | `embedding` | `rule_based` |
+| `A2_B1_C1` | `vector` | `bm25` | `sequential` |
+| `A2_B1_C2` | `vector` | `bm25` | `rule_based` |
+| `A2_B2_C1` | `vector` | `embedding` | `sequential` |
+| `A2_B2_C2` | `vector` | `embedding` | `rule_based` |
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2g_cli
+```
 
 Suggested branch name:
 

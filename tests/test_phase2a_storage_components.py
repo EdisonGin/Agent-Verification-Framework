@@ -36,7 +36,7 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
 
         self.assertEqual(summary["tasks"], 1)
         self.assertEqual(summary["configs"], 1)
-        self.assertEqual(summary["components"], 1)
+        self.assertEqual(summary["components"], 8)
         self.assertEqual(summary["tool_specs"], 2)
         self.assertEqual(loaded["tasks"][0].task_id, "memory_recall_001")
 

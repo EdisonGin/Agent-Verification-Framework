@@ -731,6 +731,35 @@ Consequences:
 - Ranking is reproducible and testable offline.
 - The current embedding representation is lexical rather than semantic.
 
+### DEC-027: Encode the Factorial Component Matrix as Explicit Fixtures
+
+Decision ID: DEC-027
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2G requires the complete `2^3` component matrix for matched dissertation experiments. The framework needs a stable, auditable way to select memory, retrieval, and scheduling variants without changing tasks, tool schemas, verification logic, or run configuration semantics.
+
+Decision:
+
+Represent each component cell as a separate `ComponentConfig` JSON fixture named with the `A#_B#_C#` factor code. Use `A` for memory backend, `B` for retrieval strategy, and `C` for scheduling policy.
+
+Rationale:
+
+Explicit fixtures make the experimental matrix inspectable and easy to reference in the dissertation. They also keep component substitution under the existing schema and registry boundary, so later experiment runners can switch cells by changing only the component fixture path.
+
+Consequences:
+
+- `test_data/components/` contains all eight `A#_B#_C#` fixtures.
+- `A1/A2` map to `sqlite/vector` memory.
+- `B1/B2` map to `bm25/embedding` retrieval.
+- `C1/C2` map to `sequential/rule_based` scheduling.
+- Fixture validation and registry tests cover every cell.
+- No task, tool, trace, verification, metric, or report schema changes are introduced by Phase 2G.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library
