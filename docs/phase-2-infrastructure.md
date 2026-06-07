@@ -73,8 +73,8 @@ The implementation order should be:
 1. implement SQLite as a SUT memory backend in Phase 2B,
 2. keep the test data repository and results store filesystem-based through early Phase 2,
 3. add result-store integrity checks and artifact manifests in Phase 2I,
-4. introduce a results index database in Phase 3 only if factorial experiment volume requires faster querying, rerun tracking, or dashboard support,
-5. implement the dashboard in Phase 3 or Phase 4 after real component-run artifacts exist.
+4. introduce a results index database in Phase 3D only if factorial experiment volume requires faster querying, rerun tracking, or dashboard support,
+5. implement the dashboard in late Phase 3D or Phase 4 after real component-run artifacts exist.
 
 This distinction matters for the dissertation:
 
@@ -93,9 +93,9 @@ Recommended timing:
 | Filesystem test data repository abstraction | Phase 2A | Formalises current `test_data/` behavior |
 | Filesystem results store abstraction | Phase 2A | Formalises current `artifacts/` behavior |
 | Artifact manifest and result-store QA | Phase 2I | Validates trace/result/report consistency before large runs |
-| SQLite results index | Phase 3A, if needed | Supports querying many experiment artifacts without replacing artifact files |
+| SQLite results index | Phase 3D, if needed | Supports querying many experiment artifacts without replacing artifact files |
 | Postgres results store | Later extension | Only needed if SQLite is insufficient for scale or multi-user access |
-| Reporting dashboard | Phase 3B or Phase 4A | Needs real experiment artifacts and metrics to be useful |
+| Reporting dashboard | Late Phase 3D or Phase 4A | Needs real experiment artifacts and metrics to be useful |
 
 The default Phase 2 position is therefore:
 

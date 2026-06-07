@@ -154,3 +154,14 @@ env PYTHONPATH=src python3 -m avf run-phase2-integration --task test_data/tasks/
 env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase2j_script PYTHONPATH=src ./scripts/run-phase2-integration.sh
 env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase2_integration_baseline; print('phase2j integration import ok')"
 ```
+
+Phase 3A validates the experiment matrix and full factorial runner:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf run-phase3a-experiment --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3a_cli
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3a_script PYTHONPATH=src ./scripts/run-phase3a-experiment.sh
+env PYTHONPATH=src python3 -c "from avf.orchestration import build_experiment_matrix, run_phase3a_full_factorial; print('phase3a experiment imports ok')"
+```
+
+The Phase 3A runner writes the usual per-run trace, verification, metrics, report, and manifest artifacts for all eight component cells. It also writes experiment-level `experiment_config.json`, `matrix.json`, `run_index.json`, `comparisons/<experiment_id>.json`, and `<experiment_id>_full_factorial_report.md` artifacts.

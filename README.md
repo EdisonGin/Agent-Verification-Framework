@@ -26,11 +26,12 @@ Implemented:
 - Phase 2G: full component configuration fixture set,
 - Phase 2H: component-aware baseline runner,
 - Phase 2I: storage and artifact QA,
-- Phase 2J: Phase 2 integration baseline.
+- Phase 2J: Phase 2 integration baseline,
+- Phase 3A: experiment matrix and full factorial runner.
 
 Next planned phase:
 
-- Phase 3: experimental execution and iteration.
+- Phase 3B: pilot QA and rerun records.
 
 ## Documentation
 
@@ -43,6 +44,7 @@ Start with:
 - `docs/contracts-and-schemas.md`
 - `docs/phase-1-infrastructure.md`
 - `docs/phase-2-infrastructure.md`
+- `docs/phase-3-infrastructure.md`
 - `docs/decision-log.md`
 
 Source architecture diagrams:
@@ -68,6 +70,12 @@ Run the Phase 1 baseline:
 
 ```text
 ./scripts/run-phase1-baseline.sh
+```
+
+Run the Phase 3A full factorial experiment:
+
+```text
+./scripts/run-phase3a-experiment.sh
 ```
 
 ## Package Layout

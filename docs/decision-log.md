@@ -847,6 +847,36 @@ Consequences:
 - The Phase 2 exit report records component differences and readiness criteria.
 - Full `2^3` execution remains Phase 3 work.
 
+### DEC-031: Run Phase 3A as an Artifact-First Full Factorial Matrix
+
+Decision ID: DEC-031
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 3A must move from Phase 2 readiness checks to the first full `2^3` component experiment. The framework now has all eight component fixtures, component-aware baseline execution, deterministic trace/verification/metric/report artifacts, and artifact manifests. The architecture also includes future database and dashboard layers, but those layers should be based on real experiment outputs rather than placeholder data.
+
+Decision:
+
+Introduce a versioned `ExperimentConfig`, build a resolved full factorial matrix from existing task, run config, component, and tool fixtures, run each row through the existing component-aware baseline runner, and write experiment-level JSON/Markdown index artifacts. Keep Phase 3A filesystem- and artifact-first. Do not introduce a results database, dashboard, new verifier, new metrics, or new SUT component variants in this phase.
+
+Rationale:
+
+This creates the first matched full factorial execution while preserving the validated Phase 2 boundaries. It ensures every run remains reproducible from fixtures and every artifact remains inspectable for dissertation evidence. Deferring the database and dashboard prevents storage or presentation code from shaping the experiment before pilot QA, rerun policy, and dataset freeze requirements are known.
+
+Consequences:
+
+- `test_data/experiments/phase3_full_factorial_v1.json` records the current experiment input set.
+- `run-phase3a-experiment` executes the current one-task, one-seed, one-schedule, eight-component matrix.
+- Each row writes trace, verification, metrics, report, and manifest artifacts.
+- Experiment-level `experiment_config.json`, `matrix.json`, `run_index.json`, comparison summary, and Markdown report artifacts are written.
+- Phase 3B remains responsible for pilot QA logs, rerun records, and failure notes.
+- Phase 3C remains responsible for dataset freeze.
+- Results-index database and dashboard decisions remain deferred until the frozen or near-frozen artifact set can inform their scope.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

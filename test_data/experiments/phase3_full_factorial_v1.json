@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "experiment_id": "phase3_full_factorial_v1",
+  "task_fixtures": [
+    "../tasks/memory_recall_001.json"
+  ],
+  "run_config_fixtures": [
+    "../configs/baseline_seed_001.json"
+  ],
+  "component_fixtures": [
+    "../components/A1_B1_C1.json",
+    "../components/A1_B1_C2.json",
+    "../components/A1_B2_C1.json",
+    "../components/A1_B2_C2.json",
+    "../components/A2_B1_C1.json",
+    "../components/A2_B1_C2.json",
+    "../components/A2_B2_C1.json",
+    "../components/A2_B2_C2.json"
+  ],
+  "tool_spec_fixtures": [
+    "../tool_specs/memory.write.json",
+    "../tool_specs/memory.query.json"
+  ],
+  "perturbation_schedules": [
+    "schedule_none_v1"
+  ],
+  "execution_policy": {
+    "mode": "local_sequential",
+    "require_full_factorial": true,
+    "rerun_policy": "deterministic_overwrite",
+    "retry_limit": 0
+  },
+  "artifact_root": null,
+  "dataset_policy": {
+    "phase": "pilot_candidate",
+    "freeze_after_phase": "3C",
+    "raw_artifacts_are_source_of_truth": true
+  }
+}
