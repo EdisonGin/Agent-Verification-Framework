@@ -219,7 +219,7 @@ Implemented outputs:
 - baseline-run integration with the filesystem results store,
 - tests in `tests/test_phase2a_storage_components.py`.
 
-Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D added the rule-based scheduler as the second scheduling factor level. Phase 2E adds vector memory as the second memory factor level.
+Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D added the rule-based scheduler as the second scheduling factor level. Phase 2E added vector memory as the second memory factor level. Phase 2F adds embedding retrieval as the second retrieval factor level.
 
 Verification:
 
@@ -461,7 +461,7 @@ Limitations:
 
 - the current vector representation is lexical and deterministic,
 - it is not a hosted semantic embedding model,
-- semantic embedding retrieval remains Phase 2F.
+- hosted semantic embedding models remain a later extension.
 
 Verification:
 
@@ -479,6 +479,8 @@ phase-2e-vector-memory-backend
 ```
 
 ### Phase 2F: Embedding Retrieval Strategy
+
+Status: complete.
 
 Goal:
 
@@ -503,6 +505,32 @@ Implementation notes:
 
 - Reuse deterministic embedding utilities from vector memory if appropriate.
 - Keep retrieval strategy independent from memory backend selection even when both use vector-like representations.
+
+Implemented outputs:
+
+- embedding retrieval implementation in `src/avf/agents/retrieval/embedding.py`,
+- shared deterministic embedding utility in `src/avf/agents/embeddings/`,
+- vector memory updated to reuse the shared deterministic embedder,
+- component registry update marking `retrieval_strategy=embedding` as available,
+- mock service compatibility through the shared `RetrievalModule` interface,
+- tests in `tests/test_embedding_retrieval.py` and `tests/test_phase2a_storage_components.py`.
+
+Phase 2F keeps retrieval strategy independent from memory backend selection. Embedding retrieval can be paired with SQLite memory or vector memory through `ComponentConfig`; it does not require `memory_backend=vector`.
+
+Limitations:
+
+- the current embedding representation is deterministic and lexical,
+- it is not a hosted semantic embedding model,
+- hosted embedding adapters remain a later extension.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2f_cli
+env PYTHONPATH=src python3 -c "from avf.agents.retrieval import EmbeddingRetriever; from avf.agents.components import build_component_bundle; print('phase2f imports ok')"
+```
 
 Suggested branch name:
 

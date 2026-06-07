@@ -15,6 +15,7 @@ if str(SRC) not in sys.path:
 
 from avf.agents.components import ComponentFactory, ComponentRegistry, build_component_bundle  # noqa: E402
 from avf.agents.memory import VectorMemory  # noqa: E402
+from avf.agents.retrieval import EmbeddingRetriever  # noqa: E402
 from avf.agents.scheduling import RuleBasedScheduler, SequentialScheduler  # noqa: E402
 from avf.contracts import MetricResult, RunTrace, ValidationError, VerificationResult  # noqa: E402
 from avf.orchestration import build_run_context, run_phase1_baseline  # noqa: E402
@@ -76,10 +77,19 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "memory_backend=redis"):
             ComponentRegistry().resolve(config)
 
-    def test_component_registry_rejects_unimplemented_retrieval_variant(self) -> None:
+    def test_component_registry_resolves_embedding_retrieval_strategy(self) -> None:
         config = replace(self.component_config, retrieval_strategy="embedding")
+        bundle = ComponentRegistry().resolve(config)
 
-        with self.assertRaisesRegex(ValidationError, "retrieval_strategy=embedding; planned for Phase 2F"):
+        self.assertEqual(bundle.retrieval.variant, "embedding")
+        self.assertEqual(bundle.retrieval.status, "available")
+        self.assertEqual(bundle.retrieval.planned_phase, "Phase 2F")
+        self.assertIsInstance(bundle.retrieval_module, EmbeddingRetriever)
+
+    def test_component_registry_rejects_unknown_retrieval_variant(self) -> None:
+        config = replace(self.component_config, retrieval_strategy="hybrid")
+
+        with self.assertRaisesRegex(ValidationError, "retrieval_strategy=hybrid"):
             ComponentRegistry().resolve(config)
 
     def test_component_registry_resolves_rule_based_scheduler(self) -> None:

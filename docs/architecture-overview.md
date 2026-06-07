@@ -263,6 +263,7 @@ Phase 2A also introduces the SUT component registry and factory:
 - SQLite memory is available as a concrete memory backend from Phase 2B,
 - vector memory is available as a concrete memory backend from Phase 2E,
 - BM25 retrieval is available as a concrete retrieval strategy from Phase 2C,
+- embedding retrieval is available as a concrete retrieval strategy from Phase 2F,
 - rule-based scheduling is available as a concrete scheduler from Phase 2D,
 - unsupported variants fail explicitly rather than silently falling back to baseline behavior.
 
@@ -293,6 +294,13 @@ Phase 2E introduces the second SUT memory backend:
 - memory records are represented with deterministic sparse lexical vectors,
 - `search` ranks records by local cosine similarity with stable insertion-order tie-breaking,
 - no hosted embedding API or network access is required.
+
+Phase 2F introduces the second SUT retrieval strategy:
+
+- `EmbeddingRetriever` implements the same retrieval interface as BM25 retrieval,
+- documents are indexed with deterministic local sparse embeddings,
+- query results use the same ranked payload shape as BM25,
+- retrieval strategy remains independent from the selected memory backend.
 
 ## Thin-Slice Implementation
 

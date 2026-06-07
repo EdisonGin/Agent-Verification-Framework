@@ -21,11 +21,12 @@ Implemented:
 - Phase 2B: SQLite episodic memory backend,
 - Phase 2C: BM25 retrieval strategy,
 - Phase 2D: rule-based scheduler,
-- Phase 2E: vector memory backend.
+- Phase 2E: vector memory backend,
+- Phase 2F: embedding retrieval strategy.
 
 Next planned phase:
 
-- Phase 2F: embedding retrieval strategy.
+- Phase 2G: full component configuration fixture set.
 
 ## Documentation
 

@@ -668,6 +668,30 @@ After Phase 2E, the currently implemented component levels are:
 | Scheduling | `sequential` | available | Phase 1E |
 | Scheduling | `rule_based` | available | Phase 2D |
 
+## Phase 2F Implementation
+
+Phase 2F implements embedding retrieval as the second SUT retrieval strategy:
+
+- `EmbeddingRetriever` implements the shared `RetrievalModule` interface,
+- documents are indexed with `document_id`, text, metadata, source payloads, and deterministic sparse vectors,
+- `query` returns ranked retrieval result dictionaries with `document_id`, `rank`, `score`, `text`, `metadata`, and `source`,
+- ranking uses deterministic cosine similarity over local sparse embeddings,
+- metadata filtering and non-matching queries follow the same contract as BM25 retrieval,
+- ties are resolved by index order and document identifier.
+
+The Phase 2F retriever uses the shared `DeterministicTextEmbedder` utility. It does not require a hosted embedding service or network access.
+
+After Phase 2F, the currently implemented component levels are:
+
+| Family | Variant | Status | Concrete implementation phase |
+|---|---|---|---|
+| Memory | `sqlite` | available | Phase 2B |
+| Memory | `vector` | available | Phase 2E |
+| Retrieval | `bm25` | available | Phase 2C |
+| Retrieval | `embedding` | available | Phase 2F |
+| Scheduling | `sequential` | available | Phase 1E |
+| Scheduling | `rule_based` | available | Phase 2D |
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator
