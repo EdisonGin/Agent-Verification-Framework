@@ -750,6 +750,16 @@ The validation summary records:
 
 The manifest intentionally does not hash itself. It validates the core run artifacts without creating recursive manifest content.
 
+After Phase 2J, `ExperimentResult` is used for the Phase 2 integration comparison summary:
+
+- `experiment_id` is `phase2_integration_baseline`,
+- `factorial_design` records the selected component cells and A/B/C factor coding,
+- `run_ids` lists the included component-aware baseline runs,
+- `aggregation` stores success rates, artifact validation rates, comparison rows, and Phase 2 exit criteria,
+- `analysis_artifacts` links to the comparison summary JSON and Markdown exit report.
+
+This remains a small integration baseline, not the full Phase 3 factorial dataset.
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

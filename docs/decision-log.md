@@ -818,6 +818,35 @@ Consequences:
 - Missing artifacts and `run_id` mismatches are reported explicitly.
 - Rerun versioning remains deferred to Phase 3 if pilot QA requires preserving failed or non-deterministic attempts.
 
+### DEC-030: Treat Phase 2J as a Readiness Baseline, Not Full Experiment Execution
+
+Decision ID: DEC-030
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2J must demonstrate that the modular component pipeline works end to end before Phase 3. The project already has all eight component fixtures, but running and curating the full `2^3` dataset belongs to the experimental execution phase with pilot QA and rerun records.
+
+Decision:
+
+Run a small integration baseline with `A1_B1_C1` and `A2_B2_C2`. Write per-run artifacts and manifests, an `ExperimentResult` comparison summary, and a Markdown Phase 2 exit report. Defer the full factorial run matrix to Phase 3.
+
+Rationale:
+
+This proves the component-aware runner, artifact QA, comparison summary, and reporting path without prematurely creating the dissertation dataset. It gives a clean Phase 2 exit artifact while keeping Phase 3 responsible for systematic experiment execution, pilot review, rerun notes, and dataset freeze.
+
+Consequences:
+
+- `scripts/run-phase2-integration.sh` provides the reproducible Phase 2J entrypoint.
+- `python -m avf run-phase2-integration` supports the same flow through the CLI.
+- The integration baseline compares one Level 1 cell against one Level 2 variant cell.
+- The comparison summary uses the existing `ExperimentResult` contract.
+- The Phase 2 exit report records component differences and readiness criteria.
+- Full `2^3` execution remains Phase 3 work.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

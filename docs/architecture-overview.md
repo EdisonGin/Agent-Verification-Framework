@@ -323,6 +323,13 @@ Phase 2I strengthens the filesystem results store:
 - validation checks `run_id` consistency and missing artifacts before full experiment execution,
 - repeated runs use deterministic overwrite rather than versioned rerun directories.
 
+Phase 2J adds the integration baseline boundary:
+
+- `run-phase2-integration` executes a Level 1 baseline cell and a Level 2 variant cell,
+- each run produces trace, verification, metrics, report, and manifest artifacts,
+- an `ExperimentResult` JSON comparison summary is written under `comparisons/`,
+- a Markdown Phase 2 exit report records component differences and Phase 3 readiness.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:

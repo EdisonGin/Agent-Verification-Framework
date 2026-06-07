@@ -8,9 +8,11 @@ __all__ = [
     "BaselineRunArtifactPaths",
     "BaselineRunResult",
     "ExecutionEngine",
+    "Phase2IntegrationResult",
     "RunContext",
     "build_run_context",
     "build_run_context_from_files",
+    "run_phase2_integration_baseline",
     "run_component_aware_baseline",
     "deterministic_run_id",
     "load_component_config",
@@ -31,4 +33,8 @@ def __getattr__(name: str) -> object:
         from . import baseline_run
 
         return getattr(baseline_run, name)
+    if name in {"Phase2IntegrationResult", "run_phase2_integration_baseline"}:
+        from . import phase2_integration
+
+        return getattr(phase2_integration, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
