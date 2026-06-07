@@ -24,6 +24,8 @@ The schema design follows six principles:
 | `TaskCase` | Defines a benchmark task, task family, initial state, tool permissions, success criteria, and progress model |
 | `RunConfig` | Defines model, prompt, seed, perturbation schedule, runtime settings, and artifact locations |
 | `ComponentConfig` | Selects memory, retrieval, and scheduling variants |
+| `ExperimentConfig` | Defines the ordered task, run config, component, tool schema, schedule, execution-policy, and dataset-policy references for an experiment |
+| `ExperimentMatrixRow` | Records one resolved task/seed/schedule/component/tool-schema cell and its expected deterministic run ID |
 | `RunContext` | Stores the validated orchestration context created from task, run, component, and tool fixtures |
 | `AgentRunInput` | Bundles the orchestrator inputs passed into the base agent / SUT |
 | `AgentAction` | Represents an internal action or external tool action selected by the base agent |
@@ -464,6 +466,67 @@ Required fields:
 | `aggregation` | object | Summary statistics |
 | `analysis_artifacts` | object | Paths to reports, tables, and plots |
 
+## ExperimentConfig
+
+`ExperimentConfig` is introduced in Phase 3A as an orchestration artifact for experiment execution. It is stored as JSON under `test_data/experiments/` and archived into each experiment artifact directory before the run index is written.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `experiment_id` | string | Stable experiment identifier |
+| `task_fixtures` | list[string] | Ordered `TaskCase` fixture paths |
+| `run_config_fixtures` | list[string] | Ordered `RunConfig` fixture paths; each encodes seed and perturbation schedule |
+| `component_fixtures` | list[string] | Ordered `ComponentConfig` fixture paths |
+| `tool_spec_fixtures` | list[string] | Fixed tool schema set used by every row |
+| `perturbation_schedules` | list[string] | Declared schedule IDs allowed by the experiment |
+| `execution_policy` | object | Local execution mode, rerun policy, retry limit, and full-factorial requirement |
+| `artifact_root` | string/null | Optional output root; CLI can override it |
+| `dataset_policy` | object | Dataset inclusion/freeze policy metadata for later Phase 3 subphases |
+
+Phase 3A does not use `ExperimentConfig` to change task, tool, verifier, metric, or component schemas. It only records which existing fixtures are included in the matched experiment.
+
+## ExperimentMatrixRow
+
+`ExperimentMatrixRow` is a resolved row produced from `ExperimentConfig`.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `row_id` | string | Stable row identifier such as `row_001` |
+| `task_fixture` | string | Resolved task fixture path |
+| `run_config_fixture` | string | Resolved run config fixture path |
+| `component_fixture` | string | Resolved component fixture path |
+| `tool_spec_fixtures` | list[string] | Resolved tool spec fixture paths |
+| `task_id` | string | Resolved task ID |
+| `task_version` | string | Resolved task version |
+| `run_config_id` | string | Resolved run config ID |
+| `seed` | integer | Seed copied from `RunConfig` |
+| `perturbation_schedule_id` | string | Schedule copied from `RunConfig` |
+| `component_config_id` | string | Resolved component fixture ID |
+| `memory_backend` | string | Selected memory factor level |
+| `retrieval_strategy` | string | Selected retrieval factor level |
+| `scheduling_policy` | string | Selected scheduling factor level |
+| `tool_names` | list[string] | Ordered tool names used by the row |
+| `tool_schema_versions` | object | Tool name to schema-version mapping |
+| `expected_run_id` | string | Deterministic run ID expected from this row |
+
+Phase 3A stores the resolved matrix at:
+
+```text
+artifacts/experiments/<experiment_id>/matrix.json
+```
+
+The run index is stored separately at:
+
+```text
+artifacts/experiments/<experiment_id>/run_index.json
+```
+
+It records the actual run ID, status, success flags, component factors, artifact validation status, and relative artifact paths for each row.
+
 ## Initial Storage Layout
 
 The planned storage layout is:
@@ -481,6 +544,8 @@ artifacts/
   traces/
   results/
   reports/
+  comparisons/
+  experiments/
   audits/
 ```
 
@@ -759,6 +824,16 @@ After Phase 2J, `ExperimentResult` is used for the Phase 2 integration compariso
 - `analysis_artifacts` links to the comparison summary JSON and Markdown exit report.
 
 This remains a small integration baseline, not the full Phase 3 factorial dataset.
+
+After Phase 3A, `ExperimentResult` is also used for the full factorial execution summary:
+
+- `experiment_id` is `phase3_full_factorial_v1` by default,
+- `factorial_design` records the one-task, one-seed, one-schedule, eight-component design,
+- `run_ids` lists all eight component-cell runs,
+- `aggregation` stores expected run count, completed run count, success rates, artifact validation rates, run index records, and Phase 3A acceptance criteria,
+- `analysis_artifacts` links to `experiment_config.json`, `matrix.json`, `run_index.json`, the comparison summary JSON, and the Markdown full factorial report.
+
+The raw per-run artifacts remain authoritative. Phase 3A experiment-level artifacts index the run set and support QA, rerun-record, and dataset-freeze work in later Phase 3 subphases.
 
 ## Boundary Contracts
 

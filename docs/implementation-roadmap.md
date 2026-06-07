@@ -112,6 +112,10 @@ Deliverable D2: validated modular implementation of memory, retrieval, and sched
 
 Goal: run the full factorial experiment and produce a quality-checked trace dataset.
 
+Detailed planning for this phase is maintained in `phase-3-infrastructure.md`.
+
+Phase 3A introduces a versioned `ExperimentConfig`, resolves the current one-task, one-seed, one-schedule, eight-component matrix, runs each row through the component-aware baseline runner, writes the experiment matrix and run index, and produces an `ExperimentResult` comparison summary plus a Markdown full factorial report. It remains filesystem- and artifact-first; pilot QA, rerun records, failure notes, dataset freeze, results-index databases, and dashboard work remain later Phase 3 or Phase 4 responsibilities.
+
 Required outputs:
 
 - eight component configurations,

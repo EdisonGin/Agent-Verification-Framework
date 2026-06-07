@@ -13,9 +13,12 @@ from avf.contracts.fixture_loader import load_json, validate_fixture_tree
 from avf.orchestration import (
     BaselineRunResult,
     Phase2IntegrationResult,
+    Phase3AExperimentResult,
     build_run_context_from_files,
+    load_experiment_config,
     run_component_aware_baseline,
     run_phase2_integration_baseline,
+    run_phase3a_full_factorial,
 )
 from avf.storage import FileSystemResultsStore
 from avf.tracing import read_run_trace
@@ -137,6 +140,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Experiment identifier for comparison summary and exit report artifacts.",
     )
 
+    run_phase3a = subparsers.add_parser(
+        "run-phase3a-experiment",
+        help="Run the Phase 3A full factorial experiment matrix.",
+    )
+    run_phase3a.add_argument(
+        "--experiment-config",
+        required=True,
+        help="Path to a Phase 3A ExperimentConfig JSON fixture.",
+    )
+    run_phase3a.add_argument(
+        "--artifact-root",
+        help="Optional artifact root override. Defaults to the ExperimentConfig or RunConfig artifact paths.",
+    )
+    run_phase3a.add_argument(
+        "--experiment-id",
+        help="Optional experiment ID override for ad hoc reruns.",
+    )
+
     return parser
 
 
@@ -232,6 +253,21 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase2_integration_cli_summary(result), indent=2, sort_keys=True))
         return 0 if result.experiment.aggregation["phase2_exit_criteria"]["ready_for_phase3_full_factorial"] else 1
 
+    if args.command == "run-phase3a-experiment":
+        try:
+            config = load_experiment_config(Path(args.experiment_config))
+            config = config.with_overrides(
+                experiment_id=args.experiment_id,
+                artifact_root=Path(args.artifact_root) if args.artifact_root else None,
+            )
+            result = run_phase3a_full_factorial(config)
+        except ValidationError as exc:
+            print(f"Phase 3A experiment failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase3a_experiment_cli_summary(result), indent=2, sort_keys=True))
+        return 0 if result.experiment.aggregation["phase3a_acceptance_criteria"]["ready_for_phase3b_pilot_qa"] else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -263,4 +299,27 @@ def _phase2_integration_cli_summary(result: Phase2IntegrationResult) -> Dict[str
         "task_success_rate": result.experiment.aggregation["task_success_rate"],
         "artifact_validation_pass_rate": result.experiment.aggregation["artifact_validation_pass_rate"],
         "ready_for_phase3_full_factorial": criteria["ready_for_phase3_full_factorial"],
+    }
+
+
+def _phase3a_experiment_cli_summary(result: Phase3AExperimentResult) -> Dict[str, object]:
+    aggregation = result.experiment.aggregation
+    criteria = aggregation["phase3a_acceptance_criteria"]
+    return {
+        "experiment_id": result.experiment.experiment_id,
+        "expected_run_count": aggregation["expected_run_count"],
+        "completed_run_count": aggregation["completed_run_count"],
+        "run_count": len(result.run_results),
+        "run_ids": result.experiment.run_ids,
+        "component_config_ids": [
+            run.component_bundle.config_id
+            for run in result.run_results
+        ],
+        "matrix": str(result.artifacts.matrix),
+        "run_index": str(result.artifacts.run_index),
+        "comparison_summary": str(result.artifacts.comparison_summary),
+        "experiment_report": str(result.artifacts.experiment_report),
+        "task_success_rate": aggregation["task_success_rate"],
+        "artifact_validation_pass_rate": aggregation["artifact_validation_pass_rate"],
+        "ready_for_phase3b_pilot_qa": criteria["ready_for_phase3b_pilot_qa"],
     }

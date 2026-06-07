@@ -8,10 +8,17 @@ __all__ = [
     "BaselineRunArtifactPaths",
     "BaselineRunResult",
     "ExecutionEngine",
+    "ExperimentConfig",
+    "ExperimentMatrix",
+    "ExperimentMatrixRow",
     "Phase2IntegrationResult",
+    "Phase3AExperimentResult",
     "RunContext",
     "build_run_context",
     "build_run_context_from_files",
+    "build_experiment_matrix",
+    "load_experiment_config",
+    "run_phase3a_full_factorial",
     "run_phase2_integration_baseline",
     "run_component_aware_baseline",
     "deterministic_run_id",
@@ -37,4 +44,16 @@ def __getattr__(name: str) -> object:
         from . import phase2_integration
 
         return getattr(phase2_integration, name)
+    if name in {
+        "ExperimentConfig",
+        "ExperimentMatrix",
+        "ExperimentMatrixRow",
+        "Phase3AExperimentResult",
+        "build_experiment_matrix",
+        "load_experiment_config",
+        "run_phase3a_full_factorial",
+    }:
+        from . import experiment_matrix
+
+        return getattr(experiment_matrix, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

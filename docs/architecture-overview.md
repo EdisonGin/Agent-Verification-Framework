@@ -330,6 +330,17 @@ Phase 2J adds the integration baseline boundary:
 - an `ExperimentResult` JSON comparison summary is written under `comparisons/`,
 - a Markdown Phase 2 exit report records component differences and Phase 3 readiness.
 
+Phase 3A adds the experiment matrix boundary:
+
+- `ExperimentConfig` records the ordered task, run config, component, tool schema, schedule, execution-policy, and dataset-policy references for one experiment,
+- `build_experiment_matrix` resolves the full matched matrix and computes deterministic expected run IDs,
+- `run-phase3a-experiment` executes the current one-task, one-seed, one-schedule, eight-component matrix,
+- every matrix row delegates to the existing component-aware baseline runner,
+- per-run trace, verification, metrics, report, and manifest artifacts remain the source of truth,
+- experiment-level `experiment_config.json`, `matrix.json`, `run_index.json`, comparison summary, and Markdown report artifacts index the run set.
+
+This layer does not introduce a database, dashboard, new verifier, or new SUT component. It coordinates already validated Phase 2 components into the first full factorial execution.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:

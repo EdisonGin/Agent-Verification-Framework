@@ -14,6 +14,7 @@ The documents are structured to support both implementation and dissertation wri
 | `contracts-and-schemas.md` | Initial schema and interface contracts between layers |
 | `phase-1-infrastructure.md` | Detailed Phase 1 execution plan and acceptance criteria |
 | `phase-2-infrastructure.md` | Detailed Phase 2 modular component and storage plan |
+| `phase-3-infrastructure.md` | Detailed Phase 3 experimental execution, QA, and dataset freeze plan |
 | `decision-log.md` | Record of major design and methodology decisions |
 
 ## Source Materials
@@ -32,7 +33,8 @@ The documents are structured to support both implementation and dissertation wri
 4. `contracts-and-schemas.md`
 5. `phase-1-infrastructure.md`
 6. `phase-2-infrastructure.md`
-7. `decision-log.md`
+7. `phase-3-infrastructure.md`
+8. `decision-log.md`
 
 ## Dissertation Use
 
