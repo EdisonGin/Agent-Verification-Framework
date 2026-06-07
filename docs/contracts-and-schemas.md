@@ -563,7 +563,7 @@ New boundary abstractions:
 - `ComponentRegistry` resolves `ComponentConfig` values into a `ComponentBundle`,
 - `ComponentFactory` provides a stable construction facade for future SUT component wiring.
 
-The current `A1_B1_C1` cell resolves as:
+At Phase 2A completion, the current `A1_B1_C1` cell resolved as:
 
 | Family | Variant | Phase 2A status | Concrete implementation phase |
 |---|---|---|---|
@@ -571,7 +571,29 @@ The current `A1_B1_C1` cell resolves as:
 | Retrieval | `bm25` | deferred descriptor | Phase 2C |
 | Scheduling | `sequential` | available | Phase 1E |
 
-This keeps the current baseline executable while making it explicit that SQLite memory and BM25 retrieval are not yet implemented as real component variants.
+This kept the Phase 2A baseline executable while making it explicit that SQLite memory and BM25 retrieval were not yet implemented as real component variants at that point.
+
+## Phase 2B Implementation
+
+Phase 2B implements SQLite memory as the first real SUT memory backend:
+
+- `SQLiteMemory` implements the shared `MemoryModule` interface,
+- records are stored in a deterministic SQLite table,
+- `write` returns stable `mem_###` record identifiers,
+- `read` returns records by structured key,
+- `search` filters records by key, metadata, and limit,
+- `MockMemoryService` can delegate memory tools to a `MemoryModule`,
+- `ComponentRegistry` marks `memory_backend=sqlite` as available.
+
+SQLite memory is not the results store. Trace, verification, metric, and report artifacts still use `FileSystemResultsStore`.
+
+After Phase 2B, the current `A1_B1_C1` cell resolves as:
+
+| Family | Variant | Status | Concrete implementation phase |
+|---|---|---|---|
+| Memory | `sqlite` | available | Phase 2B |
+| Retrieval | `bm25` | deferred descriptor | Phase 2C |
+| Scheduling | `sequential` | available | Phase 1E |
 
 ## Boundary Contracts
 

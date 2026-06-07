@@ -92,7 +92,7 @@ Goal: implement interchangeable memory, retrieval, and scheduling components whi
 
 Detailed planning for this phase is maintained in `phase-2-infrastructure.md`.
 
-Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a database dependency; SQLite is still scheduled first as a SUT memory backend in Phase 2B.
+Phase 2A introduces filesystem storage abstractions and a component registry/factory. It does not add a results database dependency. Phase 2B introduces SQLite as a SUT memory backend, not as the experiment results store.
 
 Required factors:
 

@@ -17,11 +17,12 @@ Implemented:
 - Phase 1G: deterministic trace logging and trace artifact validation,
 - Phase 1H: deterministic rule-based verification,
 - Phase 1I: first reproducible baseline run with trace, verification, metrics, and Markdown report artifacts,
-- Phase 2A: filesystem storage abstractions and component registry/factory.
+- Phase 2A: filesystem storage abstractions and component registry/factory,
+- Phase 2B: SQLite episodic memory backend.
 
 Next planned phase:
 
-- Phase 2B: SQLite episodic memory backend.
+- Phase 2C: BM25 retrieval strategy.
 
 ## Documentation
 

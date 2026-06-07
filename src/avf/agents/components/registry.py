@@ -1,10 +1,11 @@
-"""Phase 2A component registry for controlled SUT module selection."""
+"""Component registry for controlled SUT module selection."""
 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from typing import Dict, Optional
 
+from avf.agents.memory import MemoryModule, SQLiteMemory
 from avf.agents.scheduling import Scheduler, SequentialScheduler
 from avf.contracts import ComponentConfig, ValidationError
 
@@ -33,6 +34,7 @@ class ComponentBundle:
     retrieval: ComponentDescriptor
     scheduling: ComponentDescriptor
     scheduler: Scheduler
+    memory_module: Optional[MemoryModule] = None
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -56,6 +58,7 @@ class ComponentRegistry:
             retrieval=retrieval,
             scheduling=scheduling,
             scheduler=SequentialScheduler(),
+            memory_module=SQLiteMemory() if config.memory_backend == "sqlite" else None,
         )
 
     def _memory(self, variant: str) -> ComponentDescriptor:
@@ -64,9 +67,12 @@ class ComponentRegistry:
                 family="memory",
                 variant="sqlite",
                 implementation_id="sqlite_memory_backend",
-                status="deferred",
+                status="available",
                 planned_phase="Phase 2B",
-                description="SQLite episodic memory backend selected by ComponentConfig; implementation deferred to Phase 2B.",
+                description=(
+                    "SQLite episodic memory backend selected by ComponentConfig "
+                    "and available through the memory interface."
+                ),
             )
         raise self._unsupported("memory_backend", variant, {"vector": "Phase 2E"})
 
