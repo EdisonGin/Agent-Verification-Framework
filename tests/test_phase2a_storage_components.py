@@ -43,8 +43,9 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
 
         self.assertEqual(bundle.config_id, "A1_B1_C1")
         self.assertEqual(bundle.memory.variant, "sqlite")
-        self.assertEqual(bundle.memory.status, "deferred")
+        self.assertEqual(bundle.memory.status, "available")
         self.assertEqual(bundle.memory.planned_phase, "Phase 2B")
+        self.assertIsNotNone(bundle.memory_module)
         self.assertEqual(bundle.retrieval.variant, "bm25")
         self.assertEqual(bundle.retrieval.status, "deferred")
         self.assertEqual(bundle.retrieval.planned_phase, "Phase 2C")
@@ -127,7 +128,29 @@ class Phase2AStorageAndComponentTests(unittest.TestCase):
         self.assertTrue(result.verification.passed)
         self.assertTrue(result.metrics.task_success)
         self.assertEqual(result.component_bundle.config_id, "A1_B1_C1")
+        self.assertEqual(result.component_bundle.memory.status, "available")
         self.assertEqual(result.component_bundle.scheduling.variant, "sequential")
+
+    def test_baseline_trace_records_selected_component_config(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = run_phase1_baseline(
+                task_path=self.repository.task_path("memory_recall_001.json"),
+                run_config_path=self.repository.run_config_path("baseline_seed_001.json"),
+                component_config_path=self.repository.component_config_path("A1_B1_C1.json"),
+                tool_spec_paths=[
+                    self.repository.tool_spec_path("memory.write.json"),
+                    self.repository.tool_spec_path("memory.query.json"),
+                ],
+                artifact_root=Path(directory),
+            )
+
+        component_events = [
+            event for event in result.trace.events
+            if event.payload.get("stage") == "component_config"
+        ]
+
+        self.assertEqual(len(component_events), 1)
+        self.assertEqual(component_events[0].payload["component_config"]["memory_backend"], "sqlite")
 
 
 if __name__ == "__main__":

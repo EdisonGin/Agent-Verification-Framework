@@ -1,12 +1,13 @@
-"""Deterministic mock memory service for Phase 1F."""
+"""Deterministic mock memory service with optional memory-backend delegation."""
 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional
 
-from avf.contracts import ToolCall, ToolResult
+from avf.agents.memory import MemoryModule
 from avf.agents.tools import ToolClient
+from avf.contracts import ToolCall, ToolResult
 
 from .perturbations import NoPerturbationController, PerturbationController
 
@@ -25,12 +26,17 @@ class MemoryRecord:
 
 
 class MockMemoryService(ToolClient):
-    """In-memory mock service implementing memory.write and memory.query."""
+    """Tool service implementing memory.write and memory.query."""
 
     supported_tools = {"memory.write", "memory.query"}
 
-    def __init__(self, perturbations: Optional[PerturbationController] = None) -> None:
+    def __init__(
+        self,
+        perturbations: Optional[PerturbationController] = None,
+        memory_backend: Optional[MemoryModule] = None,
+    ) -> None:
         self.perturbations = perturbations or NoPerturbationController()
+        self.memory_backend = memory_backend
         self._records: List[MemoryRecord] = []
         self.calls: List[ToolCall] = []
 
@@ -66,6 +72,20 @@ class MockMemoryService(ToolClient):
         if not isinstance(metadata, dict):
             return self._error_result(tool_call, "invalid_arguments", "memory.write metadata must be an object")
 
+        if self.memory_backend is not None:
+            try:
+                record_id = self.memory_backend.write(key, value, dict(metadata))
+            except ValueError as exc:
+                return self._error_result(tool_call, "invalid_arguments", str(exc))
+            return ToolResult(
+                tool_call_id=tool_call.tool_call_id,
+                status="success",
+                output={"ok": True, "record_id": record_id},
+                error=None,
+                latency_ms=0,
+                perturbation_applied=None,
+            )
+
         record = MemoryRecord(
             record_id=f"mem_{len(self._records) + 1:03d}",
             key=key,
@@ -94,6 +114,20 @@ class MockMemoryService(ToolClient):
         if not isinstance(limit, int) or isinstance(limit, bool) or limit < 1:
             return self._error_result(tool_call, "invalid_arguments", "memory.query limit must be a positive integer")
 
+        if self.memory_backend is not None:
+            try:
+                records = self.memory_backend.search(query, metadata_filter, limit)
+            except ValueError as exc:
+                return self._error_result(tool_call, "invalid_arguments", str(exc))
+            return ToolResult(
+                tool_call_id=tool_call.tool_call_id,
+                status="success",
+                output={"ok": True, "records": records},
+                error=None,
+                latency_ms=0,
+                perturbation_applied=None,
+            )
+
         matches = [
             record
             for record in self._records
@@ -120,4 +154,3 @@ class MockMemoryService(ToolClient):
             latency_ms=0,
             perturbation_applied=None,
         )
-

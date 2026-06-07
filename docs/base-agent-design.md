@@ -213,6 +213,13 @@ Phase 2 expands the baseline agent into the controlled modular SUT:
 - introduce sequential and rule-based scheduling variants through the same scheduler interface,
 - validate that component swaps do not change task definitions, prompt templates, or tool schemas.
 
+Phase 2B implementation:
+
+- `SQLiteMemory` implements the first concrete memory backend,
+- the backend uses Python standard-library `sqlite3`,
+- memory tool calls can be delegated to the SQLite backend through the mock memory service,
+- SQLite memory remains separate from the filesystem results store.
+
 ## Out-of-Scope for Initial Dissertation Factorial Design
 
 The SUT diagram includes additional useful variants. These are documented but deferred unless time allows:

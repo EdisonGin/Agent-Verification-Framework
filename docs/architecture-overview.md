@@ -260,8 +260,16 @@ Phase 2A also introduces the SUT component registry and factory:
 - `ComponentConfig` is resolved through `ComponentRegistry`,
 - the existing `A1_B1_C1` cell resolves deterministically,
 - sequential scheduling is available as the current concrete scheduler,
-- SQLite memory and BM25 retrieval are recorded as deferred descriptors until their real implementations are added,
+- SQLite memory is available as a concrete memory backend from Phase 2B,
+- BM25 retrieval is recorded as a deferred descriptor until its real implementation is added,
 - unsupported variants fail explicitly rather than silently falling back to baseline behavior.
+
+Phase 2B introduces the first real SUT memory database:
+
+- `SQLiteMemory` uses Python standard-library `sqlite3`,
+- memory records are persisted through the memory interface,
+- the mock memory tool service can delegate `memory.write` and `memory.query` to the SQLite backend,
+- the filesystem results store is unchanged and remains separate from SUT memory storage.
 
 ## Thin-Slice Implementation
 

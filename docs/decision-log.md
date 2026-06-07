@@ -561,7 +561,7 @@ Consequences:
 - `FileSystemTestDataRepository` formalises the current `test_data/` fixture repository.
 - `FileSystemResultsStore` formalises the current `artifacts/` result store.
 - The results store remains artifact-first.
-- SQLite is introduced later as a memory component, not as a replacement for result artifacts.
+- SQLite is introduced as a memory component in Phase 2B, not as a replacement for result artifacts.
 - A results index database can be revisited in Phase 3 if experiment scale or dashboard requirements justify it.
 
 ### DEC-021: Use Explicit Deferred Component Descriptors in Phase 2A
@@ -590,6 +590,34 @@ Consequences:
 - Deferred descriptors document the planned implementation phase for memory and retrieval.
 - Unsupported variants fail clearly.
 - Later Phase 2 subphases can replace deferred descriptors with concrete implementations without changing `ComponentConfig`.
+
+### DEC-022: Use Standard-Library SQLite for the First Memory Backend
+
+Decision ID: DEC-022
+
+Date: 2026-06-06
+
+Status: accepted
+
+Context:
+
+Phase 2B requires a real SQLite-backed episodic memory backend for the SUT memory factor. The implementation must remain reproducible, dependency-light, and separate from the filesystem results store.
+
+Decision:
+
+Implement `memory_backend=sqlite` with Python standard-library `sqlite3`. Use SQLite only for SUT memory state, not for trace, verification, metric, or report artifacts.
+
+Rationale:
+
+The standard-library SQLite driver keeps the implementation dependency-light and easy to inspect. It also supports temporary databases in tests, deterministic schema creation, and persistent records during a run or across instances when a file path is supplied.
+
+Consequences:
+
+- `SQLiteMemory` implements the shared memory interface.
+- `MockMemoryService` can delegate memory tools to the SQLite backend.
+- `ComponentRegistry` marks SQLite memory as available.
+- The results store remains filesystem-backed.
+- Vector memory remains deferred to Phase 2E.
 
 ## Open Decisions
 

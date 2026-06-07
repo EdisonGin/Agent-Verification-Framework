@@ -54,6 +54,16 @@ class BaselineSUTAgent:
         trace_events: List[TraceEvent] = []
 
         trace_events.append(trace.event("agent_step", 0, {"stage": "perception", "state": state.to_dict()}))
+        trace_events.append(
+            trace.event(
+                "agent_step",
+                0,
+                {
+                    "stage": "component_config",
+                    "component_config": agent_input.component_config.to_dict(),
+                },
+            )
+        )
         trace_events.append(trace.event("agent_step", 0, {"stage": "reasoning", "strategy": "deterministic_baseline"}))
 
         plan = self.planner.create_plan(state)
@@ -159,4 +169,3 @@ class BaselineSUTAgent:
             observations=observations,
             trace_events=trace_events,
         )
-

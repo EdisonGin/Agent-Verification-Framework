@@ -58,7 +58,7 @@ The architecture diagram includes a test data repository and results store. At t
 | Test data repository | `test_data/` JSON fixtures | formal repository abstraction over filesystem fixtures |
 | Results store | `artifacts/` JSON and Markdown files | formal result-store abstraction over filesystem artifacts |
 | Database service | not implemented | deferred unless needed for external-service scenarios |
-| SQLite memory backend | not implemented | implemented as a SUT memory variant |
+| SQLite memory backend | implemented in Phase 2B | SUT memory variant for `memory_backend=sqlite` |
 | Vector memory backend | not implemented | implemented as a SUT memory variant |
 | Dashboard data source | not implemented | deferred until result artifacts and experiment runs stabilise |
 
@@ -219,7 +219,7 @@ Implemented outputs:
 - baseline-run integration with the filesystem results store,
 - tests in `tests/test_phase2a_storage_components.py`.
 
-Phase 2A resolves the existing `A1_B1_C1` component cell. The sequential scheduler is available. SQLite memory and BM25 retrieval are represented as explicit deferred descriptors rather than fake implementations, because their concrete implementations are scheduled for Phase 2B and Phase 2C.
+Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaces the SQLite memory descriptor with a concrete implementation.
 
 Verification:
 
@@ -237,6 +237,8 @@ phase-2a-storage-component-registry
 ```
 
 ### Phase 2B: SQLite Episodic Memory Backend
+
+Status: complete.
 
 Goal:
 
@@ -265,6 +267,28 @@ Implementation notes:
 - Keep database files temporary by default in tests.
 - Do not replace the results store with SQLite.
 - Persist only SUT memory state, not experiment results.
+
+Implemented outputs:
+
+- SQLite memory backend in `src/avf/agents/memory/sqlite_memory.py`,
+- standard-library `sqlite3` schema creation and persistence,
+- `write`, `read`, and `search` methods through the existing memory interface,
+- optional SQLite-backed delegation in `MockMemoryService`,
+- component registry update marking `memory_backend=sqlite` as available,
+- baseline-run integration using the resolved SQLite memory module,
+- trace evidence for selected `ComponentConfig`,
+- tests in `tests/test_sqlite_memory.py` and `tests/test_phase2a_storage_components.py`.
+
+Phase 2B keeps the results store filesystem-backed. SQLite is introduced only as SUT memory behavior for the controlled memory factor.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2b_cli
+env PYTHONPATH=src python3 -c "from avf.agents.memory import SQLiteMemory; from avf.agents.components import build_component_bundle; print('phase2b imports ok')"
+```
 
 Suggested branch name:
 
