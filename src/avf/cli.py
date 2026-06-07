@@ -15,7 +15,9 @@ from avf.orchestration import (
     Phase2IntegrationResult,
     Phase3AExperimentResult,
     Phase3BPilotQAResult,
+    Phase3CDatasetFreezeResult,
     build_run_context_from_files,
+    freeze_phase3c_dataset_from_config,
     load_experiment_config,
     run_component_aware_baseline,
     run_phase2_integration_baseline,
@@ -193,6 +195,37 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional commit hash override for reproducibility tests or archived reruns.",
     )
 
+    freeze_phase3c = subparsers.add_parser(
+        "freeze-phase3c-dataset",
+        help="Freeze an accepted Phase 3 pilot artifact set for analysis.",
+    )
+    freeze_phase3c.add_argument(
+        "--experiment-config",
+        required=True,
+        help="Path to the Phase 3 ExperimentConfig JSON fixture used for the pilot.",
+    )
+    freeze_phase3c.add_argument(
+        "--artifact-root",
+        help="Artifact root containing Phase 3A and Phase 3B outputs.",
+    )
+    freeze_phase3c.add_argument(
+        "--dataset-id",
+        help="Optional frozen dataset identifier. Defaults to <experiment_id>_dataset_v1.",
+    )
+    freeze_phase3c.add_argument(
+        "--frozen-at",
+        help="Optional freeze timestamp override for reproducibility tests.",
+    )
+    freeze_phase3c.add_argument(
+        "--commit-hash",
+        help="Optional commit hash override for archived freezes.",
+    )
+    freeze_phase3c.add_argument(
+        "--operator-notes",
+        default="Phase 3C dataset freeze.",
+        help="Human operator note to include in the dataset index.",
+    )
+
     return parser
 
 
@@ -325,6 +358,23 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase3b_pilot_cli_summary(result), indent=2, sort_keys=True))
         return 0 if result.qa_summary["ready_for_dataset_execution"] else 1
 
+    if args.command == "freeze-phase3c-dataset":
+        try:
+            result = freeze_phase3c_dataset_from_config(
+                experiment_config_path=Path(args.experiment_config),
+                artifact_root=Path(args.artifact_root) if args.artifact_root else None,
+                dataset_id=args.dataset_id,
+                frozen_at=args.frozen_at,
+                commit_hash=args.commit_hash,
+                operator_notes=args.operator_notes,
+            )
+        except ValidationError as exc:
+            print(f"Phase 3C dataset freeze failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase3c_freeze_cli_summary(result), indent=2, sort_keys=True))
+        return 0 if result.validation.passed else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -398,4 +448,17 @@ def _phase3b_pilot_cli_summary(result: Phase3BPilotQAResult) -> Dict[str, object
         "failure_notes_json": str(result.artifacts.failure_notes_json),
         "failure_notes_markdown": str(result.artifacts.failure_notes_markdown),
         "qa_summary": str(result.artifacts.qa_summary),
+    }
+
+
+def _phase3c_freeze_cli_summary(result: Phase3CDatasetFreezeResult) -> Dict[str, object]:
+    return {
+        "dataset_id": result.dataset_id,
+        "experiment_id": result.experiment_id,
+        "included_run_count": result.dataset_index["included_run_count"],
+        "excluded_run_count": result.dataset_index["excluded_run_count"],
+        "frozen": result.frozen_dataset_manifest["frozen"],
+        "dataset_index": str(result.artifacts.dataset_index),
+        "frozen_dataset_manifest": str(result.artifacts.frozen_dataset_manifest),
+        "dataset_report": str(result.artifacts.dataset_report),
     }

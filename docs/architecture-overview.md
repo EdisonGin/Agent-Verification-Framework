@@ -351,6 +351,16 @@ Phase 3B adds the pilot QA boundary:
 
 Phase 3B is an audit and QA layer over existing artifacts. It does not change agent behavior, task schemas, verifier logic, metric definitions, the results store backend, or dashboard timing.
 
+Phase 3C adds the dataset freeze boundary:
+
+- `freeze-phase3c-dataset` reads an accepted Phase 3B artifact set,
+- the freeze process refuses to proceed when pilot QA is not ready or unresolved infrastructure failures remain,
+- `dataset_index.json` records run metadata, inclusion decisions, artifact paths, and artifact hashes for analysis,
+- `frozen_dataset_manifest.json` records commit hash, experiment config reference, freeze prerequisites, and integrity hashes,
+- `dataset_report.md` provides a human-readable freeze summary.
+
+The dataset index becomes the analysis entrypoint. Phase 3C still does not introduce a database or dashboard; those remain Phase 3D/Phase 4 decisions based on the frozen artifact set.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:
