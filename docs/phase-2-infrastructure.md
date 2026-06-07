@@ -59,7 +59,7 @@ The architecture diagram includes a test data repository and results store. At t
 | Results store | `artifacts/` JSON and Markdown files | formal result-store abstraction over filesystem artifacts |
 | Database service | not implemented | deferred unless needed for external-service scenarios |
 | SQLite memory backend | implemented in Phase 2B | SUT memory variant for `memory_backend=sqlite` |
-| Vector memory backend | not implemented | implemented as a SUT memory variant |
+| Vector memory backend | implemented in Phase 2E | SUT memory variant for `memory_backend=vector` |
 | Dashboard data source | not implemented | deferred until result artifacts and experiment runs stabilise |
 
 The first database-related implementation should be the SQLite memory backend because it is part of the dissertation's controlled memory factor. It should not be confused with the results store. The results store remains file-based until experiment volume or dashboard requirements justify a database-backed store.
@@ -219,7 +219,7 @@ Implemented outputs:
 - baseline-run integration with the filesystem results store,
 - tests in `tests/test_phase2a_storage_components.py`.
 
-Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D adds the rule-based scheduler as the second scheduling factor level.
+Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D added the rule-based scheduler as the second scheduling factor level. Phase 2E adds vector memory as the second memory factor level.
 
 Verification:
 
@@ -419,6 +419,8 @@ phase-2d-rule-based-scheduler
 
 ### Phase 2E: Vector Memory Backend
 
+Status: complete.
+
 Goal:
 
 Implement the second memory factor level.
@@ -443,6 +445,32 @@ Implementation notes:
 - Start with deterministic local embeddings or simple numeric features.
 - Document limitations if a lightweight local embedding substitute is used.
 - Do not introduce a hosted embedding dependency until reproducibility impact is documented.
+
+Implemented outputs:
+
+- vector memory implementation in `src/avf/agents/memory/vector_memory.py`,
+- deterministic sparse lexical embedding substitute,
+- cosine-similarity ranking with insertion-order tie-breaking,
+- component registry update marking `memory_backend=vector` as available,
+- mock service compatibility through the shared `MemoryModule` interface,
+- tests in `tests/test_vector_memory.py` and `tests/test_phase2a_storage_components.py`.
+
+Phase 2E keeps memory storage separate from retrieval strategy. Vector memory stores and ranks memory records through the memory interface; BM25 retrieval remains the selected retrieval strategy for `retrieval_strategy=bm25`.
+
+Limitations:
+
+- the current vector representation is lexical and deterministic,
+- it is not a hosted semantic embedding model,
+- semantic embedding retrieval remains Phase 2F.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2e_cli
+env PYTHONPATH=src python3 -c "from avf.agents.memory import VectorMemory; from avf.agents.components import build_component_bundle; print('phase2e imports ok')"
+```
 
 Suggested branch name:
 

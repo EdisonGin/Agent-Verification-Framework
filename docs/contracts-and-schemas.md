@@ -645,6 +645,29 @@ After Phase 2D, the currently implemented component levels are:
 | Scheduling | `sequential` | available | Phase 1E |
 | Scheduling | `rule_based` | available | Phase 2D |
 
+## Phase 2E Implementation
+
+Phase 2E implements vector memory as the second SUT memory backend:
+
+- `VectorMemory` implements the shared `MemoryModule` interface,
+- `write` stores the same external record shape as SQLite memory and returns stable `mem_###` identifiers,
+- `read` returns records by structured key,
+- `search` ranks metadata-filtered records by deterministic cosine similarity,
+- `DeterministicTextEmbedder` converts record text into sparse lexical vectors without a hosted embedding service,
+- ties are resolved by insertion order and record identifier.
+
+The Phase 2E embedding substitute is intentionally lexical rather than semantic. It exists to validate the vector memory component boundary reproducibly before hosted or model-based embeddings are considered.
+
+After Phase 2E, the currently implemented component levels are:
+
+| Family | Variant | Status | Concrete implementation phase |
+|---|---|---|---|
+| Memory | `sqlite` | available | Phase 2B |
+| Memory | `vector` | available | Phase 2E |
+| Retrieval | `bm25` | available | Phase 2C |
+| Scheduling | `sequential` | available | Phase 1E |
+| Scheduling | `rule_based` | available | Phase 2D |
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

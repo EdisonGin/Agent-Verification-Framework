@@ -675,6 +675,34 @@ Consequences:
 - The scheduler orders actions but does not execute tools or modify memory/retrieval behavior.
 - DAG and parallel scheduling remain deferred extensions.
 
+### DEC-025: Use Deterministic Sparse Vectors for Vector Memory
+
+Decision ID: DEC-025
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2E requires the second memory backend for the dissertation's memory factor. The implementation must expose the same memory interface as SQLite memory, support deterministic similarity ranking, and avoid live embedding API dependencies.
+
+Decision:
+
+Implement `memory_backend=vector` as an in-process vector memory backend using deterministic sparse lexical vectors and cosine similarity. Do not call a hosted embedding model in Phase 2E.
+
+Rationale:
+
+The sparse-vector implementation validates the vector memory component boundary without introducing network access, API keys, model-version drift, or non-reproducible embedding behavior. This keeps Phase 2 focused on controlled component substitution.
+
+Consequences:
+
+- `VectorMemory` implements the shared memory interface.
+- Vector memory records use deterministic `mem_###` identifiers.
+- Similarity ranking is reproducible and testable offline.
+- The current vector representation is lexical rather than semantic.
+- Hosted or model-based embeddings remain deferred until their reproducibility impact is documented.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

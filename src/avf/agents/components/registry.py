@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Dict, Optional
 
-from avf.agents.memory import MemoryModule, SQLiteMemory
+from avf.agents.memory import MemoryModule, SQLiteMemory, VectorMemory
 from avf.agents.retrieval import BM25Retriever, RetrievalModule
 from avf.agents.scheduling import RuleBasedScheduler, Scheduler, SequentialScheduler
 from avf.contracts import ComponentConfig, ValidationError
@@ -60,7 +60,7 @@ class ComponentRegistry:
             retrieval=retrieval,
             scheduling=scheduling,
             scheduler=self._scheduler(config.scheduling_policy),
-            memory_module=SQLiteMemory() if config.memory_backend == "sqlite" else None,
+            memory_module=self._memory_module(config.memory_backend),
             retrieval_module=BM25Retriever() if config.retrieval_strategy == "bm25" else None,
         )
 
@@ -77,7 +77,26 @@ class ComponentRegistry:
                     "and available through the memory interface."
                 ),
             )
-        raise self._unsupported("memory_backend", variant, {"vector": "Phase 2E"})
+        if variant == "vector":
+            return ComponentDescriptor(
+                family="memory",
+                variant="vector",
+                implementation_id="vector_memory_backend",
+                status="available",
+                planned_phase="Phase 2E",
+                description=(
+                    "Vector-backed episodic memory selected by ComponentConfig "
+                    "and available through the memory interface."
+                ),
+            )
+        raise self._unsupported("memory_backend", variant)
+
+    def _memory_module(self, variant: str) -> MemoryModule:
+        if variant == "sqlite":
+            return SQLiteMemory()
+        if variant == "vector":
+            return VectorMemory()
+        raise self._unsupported("memory_backend", variant)
 
     def _retrieval(self, variant: str) -> ComponentDescriptor:
         if variant == "bm25":

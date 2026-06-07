@@ -261,6 +261,7 @@ Phase 2A also introduces the SUT component registry and factory:
 - the existing `A1_B1_C1` cell resolves deterministically,
 - sequential scheduling is available as the current concrete scheduler,
 - SQLite memory is available as a concrete memory backend from Phase 2B,
+- vector memory is available as a concrete memory backend from Phase 2E,
 - BM25 retrieval is available as a concrete retrieval strategy from Phase 2C,
 - rule-based scheduling is available as a concrete scheduler from Phase 2D,
 - unsupported variants fail explicitly rather than silently falling back to baseline behavior.
@@ -285,6 +286,13 @@ Phase 2D introduces the second concrete SUT scheduling policy:
 - scheduling rules prioritise internal actions, memory writes, memory queries, generic tool calls, and final answers,
 - scheduler decisions are emitted into the run trace,
 - sequential scheduling remains unchanged for the baseline `A1_B1_C1` cell.
+
+Phase 2E introduces the second SUT memory backend:
+
+- `VectorMemory` implements the same memory interface as SQLite memory,
+- memory records are represented with deterministic sparse lexical vectors,
+- `search` ranks records by local cosine similarity with stable insertion-order tie-breaking,
+- no hosted embedding API or network access is required.
 
 ## Thin-Slice Implementation
 

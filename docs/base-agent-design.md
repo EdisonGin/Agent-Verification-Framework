@@ -234,6 +234,13 @@ Phase 2D implementation:
 - scheduler decisions are recorded in trace payloads,
 - the scheduler controls action ordering only; tool execution remains in the action executor.
 
+Phase 2E implementation:
+
+- `VectorMemory` implements the second concrete memory backend,
+- memory records are stored with deterministic sparse lexical vectors,
+- vector search ranks records by cosine similarity without a hosted embedding API,
+- vector memory exposes the same write, read, and search methods as SQLite memory.
+
 ## Out-of-Scope for Initial Dissertation Factorial Design
 
 The SUT diagram includes additional useful variants. These are documented but deferred unless time allows:
