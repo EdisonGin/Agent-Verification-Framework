@@ -647,6 +647,34 @@ Consequences:
 - SQLite remains a storage component rather than a ranking implementation.
 - Embedding retrieval remains deferred to Phase 2F.
 
+### DEC-024: Use Explainable Rule Priorities for the Second Scheduler
+
+Decision ID: DEC-024
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2D requires the second scheduling factor level for the dissertation's component comparison. The scheduler must be deterministic, explainable, and observable in traces without introducing parallel execution or changing task fixtures.
+
+Decision:
+
+Implement `scheduling_policy=rule_based` as a deterministic priority scheduler. The rule order is internal actions, memory writes, memory queries, generic tool calls, and final answers. Ties preserve planner order.
+
+Rationale:
+
+This provides a concrete scheduling contrast against the sequential baseline while keeping the rules simple enough to inspect and defend in the dissertation. Recording scheduler decisions in the trace supports component-level attribution.
+
+Consequences:
+
+- `RuleBasedScheduler` implements the shared scheduler interface.
+- `SequentialScheduler` remains unchanged for the baseline cell.
+- Scheduler decisions are emitted in trace payloads.
+- The scheduler orders actions but does not execute tools or modify memory/retrieval behavior.
+- DAG and parallel scheduling remain deferred extensions.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

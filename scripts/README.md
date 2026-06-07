@@ -93,3 +93,11 @@ python3 -m unittest discover -s tests
 env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2c_cli
 env PYTHONPATH=src python3 -c "from avf.agents.retrieval import BM25Retriever; from avf.agents.components import build_component_bundle; print('phase2c imports ok')"
 ```
+
+Phase 2D validates the rule-based scheduler through the unit test suite, baseline run, and import check:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2d_cli
+env PYTHONPATH=src python3 -c "from avf.agents.scheduling import RuleBasedScheduler; from avf.agents.components import build_component_bundle; print('phase2d imports ok')"
+```

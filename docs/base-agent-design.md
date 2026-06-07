@@ -227,6 +227,13 @@ Phase 2C implementation:
 - `memory.query` uses BM25 ranking when `retrieval_strategy=bm25`,
 - retrieval remains separate from memory storage and scheduling.
 
+Phase 2D implementation:
+
+- `RuleBasedScheduler` implements the second concrete scheduling policy,
+- the scheduler prioritises internal actions, memory writes, memory queries, generic tool calls, and final answers,
+- scheduler decisions are recorded in trace payloads,
+- the scheduler controls action ordering only; tool execution remains in the action executor.
+
 ## Out-of-Scope for Initial Dissertation Factorial Design
 
 The SUT diagram includes additional useful variants. These are documented but deferred unless time allows:

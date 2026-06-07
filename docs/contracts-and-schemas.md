@@ -614,6 +614,37 @@ After Phase 2C, the current `A1_B1_C1` cell resolves as:
 | Retrieval | `bm25` | available | Phase 2C |
 | Scheduling | `sequential` | available | Phase 1E |
 
+## Phase 2D Implementation
+
+Phase 2D implements rule-based scheduling as the second SUT scheduling policy:
+
+- `RuleBasedScheduler` implements the shared `Scheduler` interface,
+- `SchedulingDecision` records explain the rule, priority, original step index, and scheduled step index for each action,
+- `SequentialScheduler` remains available and records preserve-order decisions,
+- `ComponentRegistry` marks `scheduling_policy=rule_based` as available,
+- `BaselineSUTAgent` records a scheduling trace event with selected policy, scheduled action IDs, and decision records.
+
+The rule-based scheduler uses deterministic priority classes:
+
+| Priority | Rule | Action class |
+|---|---|---|
+| 10 | `internal_before_tools` | internal actions |
+| 20 | `memory_write_before_memory_query` | `memory.write` tool calls |
+| 30 | `memory_query_after_memory_write` | `memory.query` tool calls |
+| 40 | `generic_tool_call_after_memory_dependencies` | other tool calls |
+| 100 | `final_answer_last` | final answers |
+
+Ties within the same priority class preserve planner order.
+
+After Phase 2D, the currently implemented component levels are:
+
+| Family | Variant | Status | Concrete implementation phase |
+|---|---|---|---|
+| Memory | `sqlite` | available | Phase 2B |
+| Retrieval | `bm25` | available | Phase 2C |
+| Scheduling | `sequential` | available | Phase 1E |
+| Scheduling | `rule_based` | available | Phase 2D |
+
 ## Boundary Contracts
 
 ### Inputs to Orchestrator

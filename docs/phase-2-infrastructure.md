@@ -41,7 +41,7 @@ The Phase 1 baseline currently has these limitations:
 
 - `ComponentConfig.memory_backend` is validated but not yet connected to real memory backend selection.
 - `ComponentConfig.retrieval_strategy` is validated but not yet connected to retrieval behavior.
-- `ComponentConfig.scheduling_policy` is validated but only the sequential scheduler is implemented.
+- `ComponentConfig.scheduling_policy` is validated; sequential scheduling is implemented and rule-based scheduling is implemented in Phase 2D.
 - `test_data/` acts as the test data repository using JSON files.
 - `artifacts/` acts as the results store using JSON and Markdown files.
 - no persistent experiment database exists yet.
@@ -219,7 +219,7 @@ Implemented outputs:
 - baseline-run integration with the filesystem results store,
 - tests in `tests/test_phase2a_storage_components.py`.
 
-Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaces the BM25 retrieval descriptor with a concrete implementation.
+Phase 2A resolved the existing `A1_B1_C1` component cell. The sequential scheduler was available immediately. At Phase 2A completion, SQLite memory and BM25 retrieval were represented as explicit deferred descriptors rather than fake implementations. Phase 2B replaced the SQLite memory descriptor with a concrete implementation. Phase 2C replaced the BM25 retrieval descriptor with a concrete implementation. Phase 2D adds the rule-based scheduler as the second scheduling factor level.
 
 Verification:
 
@@ -354,6 +354,8 @@ phase-2c-bm25-retrieval
 
 ### Phase 2D: Rule-Based Scheduler
 
+Status: complete.
+
 Goal:
 
 Implement the second scheduling factor level.
@@ -378,6 +380,36 @@ Implementation notes:
 - Keep rules simple and explainable.
 - Avoid parallel execution in this phase.
 - Parallel and DAG scheduling remain future extensions.
+
+Implemented outputs:
+
+- rule-based scheduler implementation in `src/avf/agents/scheduling/rule_based.py`,
+- explicit scheduler decision records in `src/avf/agents/scheduling/interface.py`,
+- component registry update marking `scheduling_policy=rule_based` as available,
+- baseline-run integration using the resolved scheduler from `ComponentConfig`,
+- trace evidence showing selected scheduling policy and decision records,
+- tests in `tests/test_rule_based_scheduler.py` and `tests/test_phase2a_storage_components.py`.
+
+Phase 2D keeps scheduling separate from memory storage and retrieval ranking. The scheduler only orders planned actions; it does not execute tools or change task fixtures.
+
+Rule priority order:
+
+```text
+internal actions
+  -> memory.write
+  -> memory.query
+  -> other tool calls
+  -> final_answer
+```
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2d_cli
+env PYTHONPATH=src python3 -c "from avf.agents.scheduling import RuleBasedScheduler; from avf.agents.components import build_component_bundle; print('phase2d imports ok')"
+```
 
 Suggested branch name:
 

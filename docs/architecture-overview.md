@@ -262,6 +262,7 @@ Phase 2A also introduces the SUT component registry and factory:
 - sequential scheduling is available as the current concrete scheduler,
 - SQLite memory is available as a concrete memory backend from Phase 2B,
 - BM25 retrieval is available as a concrete retrieval strategy from Phase 2C,
+- rule-based scheduling is available as a concrete scheduler from Phase 2D,
 - unsupported variants fail explicitly rather than silently falling back to baseline behavior.
 
 Phase 2B introduces the first real SUT memory database:
@@ -277,6 +278,13 @@ Phase 2C introduces the first real SUT retrieval strategy:
 - the implementation uses dependency-light Okapi BM25 scoring,
 - memory records are indexed as retrieval documents by the mock memory tool service,
 - `memory.query` uses the selected retrieval module for deterministic ranking when `retrieval_strategy=bm25`.
+
+Phase 2D introduces the second concrete SUT scheduling policy:
+
+- `RuleBasedScheduler` implements the shared scheduler interface,
+- scheduling rules prioritise internal actions, memory writes, memory queries, generic tool calls, and final answers,
+- scheduler decisions are emitted into the run trace,
+- sequential scheduling remains unchanged for the baseline `A1_B1_C1` cell.
 
 ## Thin-Slice Implementation
 

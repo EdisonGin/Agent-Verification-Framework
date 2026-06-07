@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from avf.contracts import (
     AgentAction,
@@ -14,7 +14,7 @@ from avf.contracts import (
     TraceEvent,
     ValidationError,
 )
-from avf.agents.scheduling import SequentialScheduler
+from avf.agents.scheduling import Scheduler, SequentialScheduler
 from avf.agents.tools import ToolClient
 
 from .action_executor import ActionExecutor
@@ -40,10 +40,10 @@ class BaselineAgentResult:
 class BaselineSUTAgent:
     """Minimal deterministic SUT agent for validating the agent boundary."""
 
-    def __init__(self) -> None:
+    def __init__(self, scheduler: Optional[Scheduler] = None) -> None:
         self.perception = PerceptionInputProcessor()
         self.planner = BaselinePlanner()
-        self.scheduler = SequentialScheduler()
+        self.scheduler = scheduler or SequentialScheduler()
         self.observation_processor = ObservationProcessor()
 
     def run(self, agent_input: AgentRunInput, tool_client: ToolClient) -> BaselineAgentResult:
@@ -67,12 +67,24 @@ class BaselineSUTAgent:
         trace_events.append(trace.event("agent_step", 0, {"stage": "reasoning", "strategy": "deterministic_baseline"}))
 
         plan = self.planner.create_plan(state)
+        trace_events.append(
+            trace.event(
+                "agent_step",
+                0,
+                {"stage": "planning", "action_ids": [action.action_id for action in plan]},
+            )
+        )
         scheduled_actions = self.scheduler.schedule(plan)
         trace_events.append(
             trace.event(
                 "agent_step",
                 0,
-                {"stage": "planning", "action_ids": [action.action_id for action in scheduled_actions]},
+                {
+                    "stage": "scheduling",
+                    "policy": agent_input.component_config.scheduling_policy,
+                    "action_ids": [action.action_id for action in scheduled_actions],
+                    "decisions": self.scheduler.decisions(),
+                },
             )
         )
 
