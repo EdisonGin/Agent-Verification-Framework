@@ -30,6 +30,9 @@ The schema design follows six principles:
 | `FailureNote` | Classifies pilot failures and records the dataset decision for QA gating |
 | `DatasetIndex` | Records the frozen analysis entrypoint with run metadata, inclusion decisions, artifact paths, and hashes |
 | `FrozenDatasetManifest` | Records dataset freeze metadata, source artifact hashes, freeze artifact hashes, commit hash, and immutability policy |
+| `StorageVolumeReview` | Summarises frozen dataset artifact volume and filesystem scan strategy |
+| `QueryRequirements` | Records analysis filters, groupings, joins, and dashboard candidate views derived from the frozen dataset |
+| `ResultsIndexDecision` | Records whether filesystem artifacts remain sufficient or a read-only results index should be planned |
 | `RunContext` | Stores the validated orchestration context created from task, run, component, and tool fixtures |
 | `AgentRunInput` | Bundles the orchestrator inputs passed into the base agent / SUT |
 | `AgentAction` | Represents an internal action or external tool action selected by the base agent |
@@ -675,6 +678,69 @@ Phase 3C also writes:
 artifacts/experiments/<experiment_id>/dataset_report.md
 ```
 
+## Phase 3D Readiness Review Artifacts
+
+Phase 3D reviews the frozen dataset and records whether database or dashboard implementation is justified.
+
+`StorageVolumeReview` is stored at:
+
+```text
+artifacts/experiments/<experiment_id>/storage_volume_review.json
+```
+
+It records:
+
+- dataset ID and experiment ID,
+- run count,
+- included and excluded run counts,
+- run artifact count,
+- source artifact count,
+- freeze artifact count,
+- total and average run artifact bytes,
+- dataset index and frozen manifest artifact hashes,
+- storage backend and scan strategy.
+
+`QueryRequirements` is stored at:
+
+```text
+artifacts/experiments/<experiment_id>/query_requirements.json
+```
+
+It records:
+
+- the primary analysis entrypoint,
+- required filters,
+- required groupings,
+- required artifact joins,
+- current field cardinalities,
+- candidate dashboard views.
+
+`ResultsIndexDecision` is stored at:
+
+```text
+artifacts/experiments/<experiment_id>/results_index_decision.json
+```
+
+It records:
+
+- whether filesystem artifacts remain sufficient,
+- whether a database is recommended,
+- observed volume and configured thresholds,
+- the database decision,
+- the read-model policy if a database is later needed,
+- whether a dashboard is recommended now,
+- dashboard decision and rationale,
+- Phase 3D acceptance criteria.
+
+If a database is later introduced, it must be a read-only index over frozen filesystem artifacts. It must not replace raw run artifacts, QA artifacts, `dataset_index.json`, or `frozen_dataset_manifest.json`.
+
+Phase 3D also writes:
+
+```text
+artifacts/experiments/<experiment_id>/dashboard_requirements.md
+artifacts/experiments/<experiment_id>/phase3d_review.md
+```
+
 ## Initial Storage Layout
 
 The planned storage layout is:
@@ -999,6 +1065,16 @@ After Phase 3C, dataset freeze artifacts are written beside the QA artifacts:
 - `dataset_report.md` summarises included and excluded runs.
 
 Raw per-run artifacts remain the source of truth, but after freeze they should be treated as read-only dissertation evidence.
+
+After Phase 3D, readiness review artifacts are written beside the frozen dataset artifacts:
+
+- `storage_volume_review.json` records current artifact volume,
+- `query_requirements.json` records analysis and dashboard query needs,
+- `results_index_decision.json` records whether filesystem artifacts remain sufficient,
+- `dashboard_requirements.md` records dashboard scope based on the frozen dataset,
+- `phase3d_review.md` summarises the readiness decision.
+
+For the current eight-run dataset, filesystem artifacts remain sufficient and dashboard implementation is deferred.
 
 ## Boundary Contracts
 

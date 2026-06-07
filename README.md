@@ -29,11 +29,12 @@ Implemented:
 - Phase 2J: Phase 2 integration baseline,
 - Phase 3A: experiment matrix and full factorial runner,
 - Phase 3B: pilot QA, rerun records, and failure-note templates,
-- Phase 3C: dataset freeze index, manifest, and report.
+- Phase 3C: dataset freeze index, manifest, and report,
+- Phase 3D: results index and dashboard readiness review.
 
 Next planned phase:
 
-- Phase 3D: results index and dashboard readiness review.
+- Phase 4: analysis and diagnostics.
 
 ## Documentation
 
@@ -90,6 +91,12 @@ Run the Phase 3C dataset freeze workflow:
 
 ```text
 ./scripts/run-phase3c-freeze.sh
+```
+
+Run the Phase 3D readiness review:
+
+```text
+./scripts/run-phase3d-review.sh
 ```
 
 ## Package Layout

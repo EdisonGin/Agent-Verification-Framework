@@ -361,6 +361,17 @@ Phase 3C adds the dataset freeze boundary:
 
 The dataset index becomes the analysis entrypoint. Phase 3C still does not introduce a database or dashboard; those remain Phase 3D/Phase 4 decisions based on the frozen artifact set.
 
+Phase 3D adds the results-index and dashboard readiness boundary:
+
+- `review-phase3d-readiness` reads the frozen `dataset_index.json` and `frozen_dataset_manifest.json`,
+- `storage_volume_review.json` summarises artifact volume and current filesystem scan strategy,
+- `query_requirements.json` derives analysis filters, groupings, joins, and candidate views from frozen dataset fields,
+- `results_index_decision.json` records whether filesystem artifacts remain sufficient and whether a database is justified,
+- `dashboard_requirements.md` records dashboard scope based on actual frozen dataset needs,
+- `phase3d_review.md` summarises the decision for dissertation auditability.
+
+For the current dataset, the filesystem-backed dataset index remains sufficient. If later scale justifies a database, it must be a read-only index over frozen artifacts rather than a replacement for them.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:

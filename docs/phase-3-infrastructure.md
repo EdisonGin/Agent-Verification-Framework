@@ -493,6 +493,8 @@ phase-3c-dataset-freeze
 
 ### Phase 3D: Results Index and Dashboard Readiness Review
 
+Status: complete.
+
 Goal:
 
 Decide whether a lightweight results index or dashboard is justified after real experiment artifacts exist.
@@ -510,6 +512,32 @@ Acceptance criteria:
 - decision log records whether filesystem artifacts remain sufficient,
 - if a database is needed, it is a read-model/index over artifacts rather than a replacement for raw artifacts,
 - dashboard scope is based on frozen dataset analysis needs.
+
+Implemented outputs:
+
+- `src/avf/orchestration/readiness_review.py` defines the Phase 3D readiness review layer,
+- `review-phase3d-readiness` exposes the review through the CLI,
+- `scripts/run-phase3d-review.sh` runs the Phase 3C prerequisite freeze and then reviews the frozen dataset,
+- `storage_volume_review.json` records run count, artifact count, artifact bytes, source/freeze artifact counts, and current filesystem scan strategy,
+- `query_requirements.json` records filters, groupings, joins, current cardinalities, and candidate dashboard views derived from `dataset_index.json`,
+- `results_index_decision.json` records whether filesystem artifacts remain sufficient, whether a database is recommended, and the read-model policy if one is needed later,
+- `dashboard_requirements.md` documents dashboard scope from frozen dataset fields,
+- `phase3d_review.md` provides a human-readable readiness report,
+- tests cover current filesystem-sufficient decision, threshold-triggered SQLite read-model recommendation, CLI execution, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3d_script PYTHONPATH=src ./scripts/run-phase3d-review.sh
+env PYTHONPATH=src python3 -m avf review-phase3d-readiness --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3d_script --operator-notes "Phase 3D CLI verification"
+env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase3d_readiness_review, run_phase3d_readiness_review_from_config; print('phase3d readiness review imports ok')"
+```
+
+Current decision:
+
+The current frozen dataset has eight included runs and remains suitable for direct filesystem artifact analysis through `dataset_index.json`. A database is not implemented in Phase 3D. If later experiment scale exceeds the configured volume thresholds, the documented database path is a read-only SQLite read model over frozen artifacts, not a replacement for raw artifacts. Dashboard implementation remains deferred until Phase 4 analysis creates concrete interactive review needs.
 
 Suggested branch name:
 
