@@ -61,6 +61,7 @@ artifacts/traces/<run_id>.json
 artifacts/results/<run_id>.rule_based_success_criteria_v1.json
 artifacts/results/<run_id>.metrics.json
 artifacts/reports/<run_id>.md
+artifacts/manifests/<run_id>.manifest.json
 ```
 
 Use `AVF_ARTIFACT_ROOT` to redirect outputs for reproducibility checks:
@@ -134,4 +135,13 @@ python3 -m unittest discover -s tests
 env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2h_a1
 env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A2_B2_C2.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2h_a2
 env PYTHONPATH=src python3 -c "from avf.orchestration import run_component_aware_baseline; print('phase2h runner import ok')"
+```
+
+Phase 2I validates storage and artifact QA:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf run-baseline --task test_data/tasks/memory_recall_001.json --config test_data/configs/baseline_seed_001.json --components test_data/components/A1_B1_C1.json --tool-spec test_data/tool_specs/memory.write.json --tool-spec test_data/tool_specs/memory.query.json --artifact-root /private/tmp/avf_phase2i_cli
+env PYTHONPATH=src python3 -m avf validate-artifacts --artifact-root /private/tmp/avf_phase2i_cli --run-id run_e4b4e294123506ad --write-manifest
+env PYTHONPATH=src python3 -c "from avf.storage import ArtifactManifest, ArtifactValidationResult, FileSystemResultsStore; print('phase2i storage qa import ok')"
 ```

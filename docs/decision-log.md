@@ -789,6 +789,35 @@ Consequences:
 - Repeated runs remain byte-reproducible for the same task/config/component/tool fixtures.
 - Changing component fixtures changes selected components without changing task or tool fixtures.
 
+### DEC-029: Use Deterministic Artifact Manifests and Overwrite Reruns
+
+Decision ID: DEC-029
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 2I needs result-store integrity checks before full factorial execution. The framework must detect missing artifacts and run ID mismatches, but it should not introduce a results database or rerun versioning before the experiment runner and pilot-run process exist.
+
+Decision:
+
+Keep the results store filesystem-backed and add deterministic artifact manifests under `manifests/`. Validate each run as a set of trace, verification, metrics, and report artifacts. Use deterministic overwrite as the repeated-run policy for identical controlled cells.
+
+Rationale:
+
+The current run ID is derived from task, run config, seed, perturbation schedule, component factors, and tool schemas. For deterministic local runs, the same controlled cell should produce the same artifact paths and byte-equivalent contents. Overwrite keeps Phase 2 simple and makes reproducibility checks direct, while manifests provide enough integrity evidence for dissertation audit trails.
+
+Consequences:
+
+- `FileSystemResultsStore` validates complete artifact sets.
+- Baseline runs write `<run_id>.manifest.json` files.
+- Manifests store relative paths, SHA-256 hashes, byte sizes, validation status, and issues.
+- `python -m avf validate-artifacts` validates existing artifact sets and can refresh manifests.
+- Missing artifacts and `run_id` mismatches are reported explicitly.
+- Rerun versioning remains deferred to Phase 3 if pilot QA requires preserving failed or non-deterministic attempts.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

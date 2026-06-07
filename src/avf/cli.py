@@ -11,8 +11,9 @@ from typing import Dict, Iterable, Optional
 from avf.contracts import TaskCase, ValidationError
 from avf.contracts.fixture_loader import load_json, validate_fixture_tree
 from avf.orchestration import BaselineRunResult, build_run_context_from_files, run_component_aware_baseline
+from avf.storage import FileSystemResultsStore
 from avf.tracing import read_run_trace
-from avf.verification import RuleBasedVerifier, VerificationResultWriter
+from avf.verification import DEFAULT_RULE_BASED_VERIFIER_ID, RuleBasedVerifier, VerificationResultWriter
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -65,7 +66,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     run_baseline = subparsers.add_parser(
         "run-baseline",
-        help="Run the deterministic Phase 1I baseline pipeline and write artifacts.",
+        help="Run the deterministic component-aware baseline pipeline and write artifacts.",
     )
     run_baseline.add_argument("--task", required=True, help="Path to a TaskCase JSON fixture.")
     run_baseline.add_argument("--config", required=True, help="Path to a RunConfig JSON fixture.")
@@ -83,6 +84,23 @@ def build_parser() -> argparse.ArgumentParser:
     run_baseline.add_argument(
         "--artifact-root",
         help="Optional artifact root. Defaults to paths declared in the RunConfig.",
+    )
+
+    validate_artifacts = subparsers.add_parser(
+        "validate-artifacts",
+        help="Validate one run's trace, verification, metrics, and report artifacts as a set.",
+    )
+    validate_artifacts.add_argument("--artifact-root", required=True, help="Artifact root directory.")
+    validate_artifacts.add_argument("--run-id", required=True, help="Run ID to validate.")
+    validate_artifacts.add_argument(
+        "--verifier-id",
+        default=DEFAULT_RULE_BASED_VERIFIER_ID,
+        help=f"Verifier ID used in the verification artifact filename. Defaults to {DEFAULT_RULE_BASED_VERIFIER_ID}.",
+    )
+    validate_artifacts.add_argument(
+        "--write-manifest",
+        action="store_true",
+        help="Write or refresh the deterministic artifact manifest after validation.",
     )
 
     return parser
@@ -150,6 +168,18 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
 
         print(json.dumps(_baseline_run_cli_summary(result), indent=2, sort_keys=True))
         return 0 if result.verification.passed else 1
+
+    if args.command == "validate-artifacts":
+        store = FileSystemResultsStore.from_artifact_root(Path(args.artifact_root))
+        validation = store.validate_run_artifacts(args.run_id, args.verifier_id)
+        payload = validation.to_dict()
+        if args.write_manifest:
+            manifest = store.build_artifact_manifest(args.run_id, args.verifier_id)
+            manifest_path = store.write_artifact_manifest(manifest)
+            payload["manifest"] = str(manifest_path)
+
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if validation.passed else 1
 
     parser.error(f"Unknown command: {args.command}")
     return 2

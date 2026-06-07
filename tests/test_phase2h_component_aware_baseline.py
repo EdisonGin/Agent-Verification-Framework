@@ -153,6 +153,7 @@ def _artifact_contents(result: object) -> dict:
         "verification": result.artifact_paths.verification.read_text(encoding="utf-8"),
         "metrics": result.artifact_paths.metrics.read_text(encoding="utf-8"),
         "report": result.artifact_paths.report.read_text(encoding="utf-8"),
+        "manifest": result.artifact_paths.manifest.read_text(encoding="utf-8"),
     }
 
 

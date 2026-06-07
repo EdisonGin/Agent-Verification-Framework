@@ -24,11 +24,12 @@ Implemented:
 - Phase 2E: vector memory backend,
 - Phase 2F: embedding retrieval strategy,
 - Phase 2G: full component configuration fixture set,
-- Phase 2H: component-aware baseline runner.
+- Phase 2H: component-aware baseline runner,
+- Phase 2I: storage and artifact QA.
 
 Next planned phase:
 
-- Phase 2I: storage and artifact QA.
+- Phase 2J: Phase 2 integration baseline.
 
 ## Documentation
 

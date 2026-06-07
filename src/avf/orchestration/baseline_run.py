@@ -27,6 +27,7 @@ class BaselineRunArtifactPaths:
     verification: Path
     metrics: Path
     report: Path
+    manifest: Path
 
     def to_dict(self) -> Dict[str, str]:
         return {name: str(path) for name, path in asdict(self).items()}
@@ -124,6 +125,7 @@ def run_component_aware_baseline(
         verification=verification_path,
         metrics=metrics_path,
         report=results_store.report_path(trace.run_id),
+        manifest=results_store.manifest_path(trace.run_id),
     )
     report = build_run_report(
         task=run_context.task,
@@ -134,6 +136,8 @@ def run_component_aware_baseline(
         artifact_paths=results_store.relative_paths(asdict(artifact_paths)),
     )
     report_path = results_store.write_report(trace.run_id, report)
+    manifest = results_store.build_artifact_manifest(trace.run_id, verification.verifier_id)
+    manifest_path = results_store.write_artifact_manifest(manifest)
 
     return BaselineRunResult(
         run_context=run_context,
@@ -146,6 +150,7 @@ def run_component_aware_baseline(
             verification=verification_path,
             metrics=metrics_path,
             report=report_path,
+            manifest=manifest_path,
         ),
     )
 

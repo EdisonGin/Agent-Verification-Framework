@@ -45,10 +45,12 @@ class Phase1BaselineRunTests(unittest.TestCase):
             self.assertTrue(result.artifact_paths.verification.exists())
             self.assertTrue(result.artifact_paths.metrics.exists())
             self.assertTrue(result.artifact_paths.report.exists())
+            self.assertTrue(result.artifact_paths.manifest.exists())
 
             trace = RunTrace.from_dict(_read_json(result.artifact_paths.trace))
             verification = VerificationResult.from_dict(_read_json(result.artifact_paths.verification))
             metrics = MetricResult.from_dict(_read_json(result.artifact_paths.metrics))
+            manifest = _read_json(result.artifact_paths.manifest)
             report = result.artifact_paths.report.read_text(encoding="utf-8")
 
         self.assertEqual(trace.run_id, result.trace.run_id)
@@ -60,6 +62,8 @@ class Phase1BaselineRunTests(unittest.TestCase):
         self.assertIn("memory.write", report)
         self.assertIn("memory.query", report)
         self.assertIn("rule_based_success_criteria_v1", report)
+        self.assertEqual(manifest["run_id"], result.trace.run_id)
+        self.assertTrue(manifest["validation"]["passed"])
 
     def test_baseline_run_artifact_contents_are_reproducible(self) -> None:
         with tempfile.TemporaryDirectory() as first_dir, tempfile.TemporaryDirectory() as second_dir:
@@ -108,12 +112,14 @@ class Phase1BaselineRunTests(unittest.TestCase):
             traces = list((root / "traces").glob("*.json"))
             results = list((root / "results").glob("*.json"))
             reports = list((root / "reports").glob("*.md"))
+            manifests = list((root / "manifests").glob("*.json"))
 
         self.assertEqual(exit_code, 0)
         self.assertTrue(json.loads(output.getvalue())["task_success"])
         self.assertEqual(len(traces), 1)
         self.assertEqual(len(results), 2)
         self.assertEqual(len(reports), 1)
+        self.assertEqual(len(manifests), 1)
 
     def test_phase1_baseline_script_runs_with_artifact_root_override(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -134,11 +140,13 @@ class Phase1BaselineRunTests(unittest.TestCase):
             traces = list((root / "traces").glob("*.json"))
             results = list((root / "results").glob("*.json"))
             reports = list((root / "reports").glob("*.md"))
+            manifests = list((root / "manifests").glob("*.json"))
 
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(len(traces), 1)
         self.assertEqual(len(results), 2)
         self.assertEqual(len(reports), 1)
+        self.assertEqual(len(manifests), 1)
         self.assertTrue(json.loads(completed.stdout)["task_success"])
 
 
@@ -152,6 +160,7 @@ def _artifact_contents(result: object) -> dict:
         "verification": result.artifact_paths.verification.read_text(encoding="utf-8"),
         "metrics": result.artifact_paths.metrics.read_text(encoding="utf-8"),
         "report": result.artifact_paths.report.read_text(encoding="utf-8"),
+        "manifest": result.artifact_paths.manifest.read_text(encoding="utf-8"),
     }
 
 
