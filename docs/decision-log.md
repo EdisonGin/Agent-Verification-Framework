@@ -877,6 +877,36 @@ Consequences:
 - Phase 3C remains responsible for dataset freeze.
 - Results-index database and dashboard decisions remain deferred until the frozen or near-frozen artifact set can inform their scope.
 
+### DEC-032: Add Pilot QA as a Gate Before Dataset Freeze
+
+Decision ID: DEC-032
+
+Date: 2026-06-07
+
+Status: accepted
+
+Context:
+
+Phase 3A can execute the full current matrix, but the resulting artifacts should not automatically become the dissertation dataset. The dissertation needs an audit trail showing whether pilot runs completed, whether artifacts validated, whether failures were task outcomes or infrastructure problems, and whether any rerun or exclusion decisions were made before dataset freeze.
+
+Decision:
+
+Add a Phase 3B pilot QA layer that runs the configured matrix in pilot mode, writes a human-readable pilot log, writes machine-readable QA summaries, records rerun decisions through `RerunRecord`, and classifies failures through `FailureNote`. Treat unresolved infrastructure failures as blockers for dataset execution and freeze. Keep the QA records as filesystem JSON/Markdown artifacts under the experiment directory.
+
+Rationale:
+
+Pilot QA separates experiment execution from dataset acceptance. It preserves reproducibility and dissertation auditability without introducing a database, dashboard, or new execution engine. Explicit failure classes prevent infrastructure faults from being mistaken for agent behavior, while still allowing genuine task/verifier failures to be retained as experimental outcomes when artifacts are valid.
+
+Consequences:
+
+- `run-phase3b-pilot` provides the pilot QA CLI entrypoint.
+- `scripts/run-phase3b-pilot.sh` provides the reproducible local pilot command.
+- `pilot_log.md` records timestamp, commit hash, config path, run counts, validation summary, limitations, operator notes, and pilot decision.
+- `rerun_records.json` records rerun decisions and is valid when empty.
+- `failure_notes.json` and `failure_notes.md` classify task, verifier, artifact, and infrastructure failures.
+- Unresolved infrastructure failures with `dataset_decision=block_freeze` block progression.
+- Phase 3C remains responsible for dataset index and frozen dataset manifest creation.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

@@ -114,7 +114,9 @@ Goal: run the full factorial experiment and produce a quality-checked trace data
 
 Detailed planning for this phase is maintained in `phase-3-infrastructure.md`.
 
-Phase 3A introduces a versioned `ExperimentConfig`, resolves the current one-task, one-seed, one-schedule, eight-component matrix, runs each row through the component-aware baseline runner, writes the experiment matrix and run index, and produces an `ExperimentResult` comparison summary plus a Markdown full factorial report. It remains filesystem- and artifact-first; pilot QA, rerun records, failure notes, dataset freeze, results-index databases, and dashboard work remain later Phase 3 or Phase 4 responsibilities.
+Phase 3A introduces a versioned `ExperimentConfig`, resolves the current one-task, one-seed, one-schedule, eight-component matrix, runs each row through the component-aware baseline runner, writes the experiment matrix and run index, and produces an `ExperimentResult` comparison summary plus a Markdown full factorial report. It remains filesystem- and artifact-first.
+
+Phase 3B adds the pilot QA gate before dataset freeze. It runs the current matrix in pilot mode, writes `pilot_log.md`, `rerun_records.json`, `failure_notes.json`, `failure_notes.md`, and `pilot_qa_summary.json`, validates rerun/failure-note records, and blocks progression when unresolved infrastructure failures remain. Dataset freeze, results-index databases, and dashboard work remain later Phase 3 or Phase 4 responsibilities.
 
 Required outputs:
 

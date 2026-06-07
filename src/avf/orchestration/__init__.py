@@ -11,16 +11,30 @@ __all__ = [
     "ExperimentConfig",
     "ExperimentMatrix",
     "ExperimentMatrixRow",
+    "FailureNote",
     "Phase2IntegrationResult",
     "Phase3AExperimentResult",
+    "Phase3BPilotQAResult",
+    "QAValidationResult",
+    "RerunRecord",
     "RunContext",
+    "build_failure_notes",
     "build_run_context",
     "build_run_context_from_files",
     "build_experiment_matrix",
+    "has_unresolved_infrastructure_failures",
     "load_experiment_config",
+    "read_failure_notes",
+    "read_rerun_records",
+    "run_phase3b_pilot_qa",
     "run_phase3a_full_factorial",
     "run_phase2_integration_baseline",
     "run_component_aware_baseline",
+    "validate_dataset_execution_gate",
+    "validate_failure_notes",
+    "validate_rerun_records",
+    "write_failure_notes_json",
+    "write_rerun_records",
     "deterministic_run_id",
     "load_component_config",
     "load_run_config",
@@ -56,4 +70,23 @@ def __getattr__(name: str) -> object:
         from . import experiment_matrix
 
         return getattr(experiment_matrix, name)
+    if name in {
+        "FailureNote",
+        "Phase3BPilotQAResult",
+        "QAValidationResult",
+        "RerunRecord",
+        "build_failure_notes",
+        "has_unresolved_infrastructure_failures",
+        "read_failure_notes",
+        "read_rerun_records",
+        "run_phase3b_pilot_qa",
+        "validate_dataset_execution_gate",
+        "validate_failure_notes",
+        "validate_rerun_records",
+        "write_failure_notes_json",
+        "write_rerun_records",
+    }:
+        from . import pilot_qa
+
+        return getattr(pilot_qa, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

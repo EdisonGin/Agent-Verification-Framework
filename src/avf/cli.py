@@ -14,11 +14,13 @@ from avf.orchestration import (
     BaselineRunResult,
     Phase2IntegrationResult,
     Phase3AExperimentResult,
+    Phase3BPilotQAResult,
     build_run_context_from_files,
     load_experiment_config,
     run_component_aware_baseline,
     run_phase2_integration_baseline,
     run_phase3a_full_factorial,
+    run_phase3b_pilot_qa,
 )
 from avf.storage import FileSystemResultsStore
 from avf.tracing import read_run_trace
@@ -158,6 +160,39 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional experiment ID override for ad hoc reruns.",
     )
 
+    run_phase3b = subparsers.add_parser(
+        "run-phase3b-pilot",
+        help="Run the Phase 3B pilot QA workflow and write QA artifacts.",
+    )
+    run_phase3b.add_argument(
+        "--experiment-config",
+        required=True,
+        help="Path to a Phase 3 ExperimentConfig JSON fixture.",
+    )
+    run_phase3b.add_argument(
+        "--artifact-root",
+        help="Optional artifact root override. Defaults to the ExperimentConfig or RunConfig artifact paths.",
+    )
+    run_phase3b.add_argument(
+        "--experiment-id",
+        help="Optional experiment ID override for ad hoc pilot runs.",
+    )
+    run_phase3b.add_argument(
+        "--operator-notes",
+        default="Phase 3B pilot QA execution.",
+        help="Human operator note to include in the pilot log.",
+    )
+    run_phase3b.add_argument(
+        "--known-limitation",
+        action="append",
+        default=[],
+        help="Known pilot limitation to include in the pilot log. May be supplied more than once.",
+    )
+    run_phase3b.add_argument(
+        "--commit-hash",
+        help="Optional commit hash override for reproducibility tests or archived reruns.",
+    )
+
     return parser
 
 
@@ -268,6 +303,28 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase3a_experiment_cli_summary(result), indent=2, sort_keys=True))
         return 0 if result.experiment.aggregation["phase3a_acceptance_criteria"]["ready_for_phase3b_pilot_qa"] else 1
 
+    if args.command == "run-phase3b-pilot":
+        try:
+            experiment_config_path = Path(args.experiment_config)
+            config = load_experiment_config(experiment_config_path)
+            config = config.with_overrides(
+                experiment_id=args.experiment_id,
+                artifact_root=Path(args.artifact_root) if args.artifact_root else None,
+            )
+            result = run_phase3b_pilot_qa(
+                config=config,
+                experiment_config_path=experiment_config_path,
+                operator_notes=args.operator_notes,
+                known_limitations=list(args.known_limitation),
+                commit_hash=args.commit_hash,
+            )
+        except ValidationError as exc:
+            print(f"Phase 3B pilot QA failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase3b_pilot_cli_summary(result), indent=2, sort_keys=True))
+        return 0 if result.qa_summary["ready_for_dataset_execution"] else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -322,4 +379,23 @@ def _phase3a_experiment_cli_summary(result: Phase3AExperimentResult) -> Dict[str
         "task_success_rate": aggregation["task_success_rate"],
         "artifact_validation_pass_rate": aggregation["artifact_validation_pass_rate"],
         "ready_for_phase3b_pilot_qa": criteria["ready_for_phase3b_pilot_qa"],
+    }
+
+
+def _phase3b_pilot_cli_summary(result: Phase3BPilotQAResult) -> Dict[str, object]:
+    return {
+        "experiment_id": result.phase3a_result.experiment.experiment_id,
+        "pilot_mode": result.qa_summary["pilot_mode"],
+        "expected_run_count": result.qa_summary["expected_run_count"],
+        "completed_run_count": result.qa_summary["completed_run_count"],
+        "failure_note_count": len(result.failure_notes),
+        "rerun_record_count": len(result.rerun_records),
+        "dataset_execution_blocked": result.qa_summary["dataset_execution_blocked"],
+        "ready_for_dataset_execution": result.qa_summary["ready_for_dataset_execution"],
+        "pilot_decision": result.qa_summary["pilot_decision"],
+        "pilot_log": str(result.artifacts.pilot_log),
+        "rerun_records": str(result.artifacts.rerun_records),
+        "failure_notes_json": str(result.artifacts.failure_notes_json),
+        "failure_notes_markdown": str(result.artifacts.failure_notes_markdown),
+        "qa_summary": str(result.artifacts.qa_summary),
     }

@@ -26,6 +26,8 @@ The schema design follows six principles:
 | `ComponentConfig` | Selects memory, retrieval, and scheduling variants |
 | `ExperimentConfig` | Defines the ordered task, run config, component, tool schema, schedule, execution-policy, and dataset-policy references for an experiment |
 | `ExperimentMatrixRow` | Records one resolved task/seed/schedule/component/tool-schema cell and its expected deterministic run ID |
+| `RerunRecord` | Records rerun intent, decision, operator notes, timestamp, and commit hash for a controlled cell |
+| `FailureNote` | Classifies pilot failures and records the dataset decision for QA gating |
 | `RunContext` | Stores the validated orchestration context created from task, run, component, and tool fixtures |
 | `AgentRunInput` | Bundles the orchestrator inputs passed into the base agent / SUT |
 | `AgentAction` | Represents an internal action or external tool action selected by the base agent |
@@ -527,6 +529,64 @@ artifacts/experiments/<experiment_id>/run_index.json
 
 It records the actual run ID, status, success flags, component factors, artifact validation status, and relative artifact paths for each row.
 
+## RerunRecord
+
+`RerunRecord` is introduced in Phase 3B as a QA artifact. It documents why a deterministic run cell was rerun or why a rerun should happen.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `rerun_id` | string | Stable rerun record identifier |
+| `original_run_id` | string | Deterministic run ID for the affected cell |
+| `component_config_id` | string | Component cell |
+| `task_id` | string | Task identifier |
+| `seed` | integer | Run seed |
+| `perturbation_schedule_id` | string | Perturbation schedule |
+| `reason` | string | Why rerun was needed |
+| `decision` | enum | `overwrite`, `exclude`, `preserve_failed_attempt`, or `restart_block` |
+| `operator_notes` | string | Human QA note |
+| `timestamp` | string | Record timestamp |
+| `commit_hash` | string | Code version used for the rerun decision |
+
+Rerun records are stored at:
+
+```text
+artifacts/experiments/<experiment_id>/rerun_records.json
+```
+
+Phase 3B writes an empty valid record set when no reruns are required.
+
+## FailureNote
+
+`FailureNote` is introduced in Phase 3B to keep failure QA separate from ordinary verification outcomes.
+
+Required fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `schema_version` | string | Schema version |
+| `run_id` | string | Affected run |
+| `component_config_id` | string | Component cell |
+| `task_id` | string | Task identifier |
+| `seed` | integer | Run seed |
+| `perturbation_schedule_id` | string | Perturbation schedule |
+| `failure_class` | enum | `task_failure`, `verifier_failure`, `artifact_failure`, or `infrastructure_failure` |
+| `observed_symptom` | string | What happened |
+| `root_cause` | string | Known cause or `unknown` |
+| `dataset_decision` | enum | `include`, `exclude`, `rerun`, or `block_freeze` |
+| `evidence_paths` | list[string] | Trace, report, manifest, or related artifact paths |
+
+Failure notes are stored at:
+
+```text
+artifacts/experiments/<experiment_id>/failure_notes.json
+artifacts/experiments/<experiment_id>/failure_notes.md
+```
+
+Phase 3B also writes failure-note templates for the four failure classes. Unresolved infrastructure failures use `dataset_decision=block_freeze`; the dataset execution gate blocks progression until such failures are resolved.
+
 ## Initial Storage Layout
 
 The planned storage layout is:
@@ -834,6 +894,15 @@ After Phase 3A, `ExperimentResult` is also used for the full factorial execution
 - `analysis_artifacts` links to `experiment_config.json`, `matrix.json`, `run_index.json`, the comparison summary JSON, and the Markdown full factorial report.
 
 The raw per-run artifacts remain authoritative. Phase 3A experiment-level artifacts index the run set and support QA, rerun-record, and dataset-freeze work in later Phase 3 subphases.
+
+After Phase 3B, pilot QA artifacts are written beside the matrix and run index:
+
+- `pilot_log.md` records timestamp, commit hash, config path, run counts, validation summary, limitations, operator notes, and the pilot decision,
+- `pilot_qa_summary.json` stores the same QA decision in machine-readable form,
+- `rerun_records.json` stores rerun decisions and remains valid even when empty,
+- `failure_notes.json` and `failure_notes.md` store classified failure notes and templates.
+
+These QA artifacts do not replace raw run artifacts or the `ExperimentResult` comparison summary. They document whether the experiment can proceed to dataset freeze.
 
 ## Boundary Contracts
 

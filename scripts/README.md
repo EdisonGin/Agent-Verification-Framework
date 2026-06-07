@@ -165,3 +165,14 @@ env PYTHONPATH=src python3 -c "from avf.orchestration import build_experiment_ma
 ```
 
 The Phase 3A runner writes the usual per-run trace, verification, metrics, report, and manifest artifacts for all eight component cells. It also writes experiment-level `experiment_config.json`, `matrix.json`, `run_index.json`, `comparisons/<experiment_id>.json`, and `<experiment_id>_full_factorial_report.md` artifacts.
+
+Phase 3B validates pilot QA, rerun records, and failure-note gating:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf run-phase3b-pilot --experiment-config test_data/experiments/phase3_full_factorial_v1.json --artifact-root /private/tmp/avf_phase3b_cli --operator-notes "Phase 3B CLI verification" --commit-hash phase3b_verify
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase3b_script PYTHONPATH=src ./scripts/run-phase3b-pilot.sh
+env PYTHONPATH=src python3 -c "from avf.orchestration import FailureNote, RerunRecord, run_phase3b_pilot_qa; print('phase3b pilot qa imports ok')"
+```
+
+The Phase 3B pilot writes `pilot_log.md`, `rerun_records.json`, `failure_notes.json`, `failure_notes.md`, and `pilot_qa_summary.json` under `artifacts/experiments/<experiment_id>/`. It also reruns the Phase 3A artifact-producing matrix because the pilot log is evidence over an actual pilot execution, not a static validation-only pass.
