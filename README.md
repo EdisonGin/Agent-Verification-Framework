@@ -31,11 +31,12 @@ Implemented:
 - Phase 3B: pilot QA, rerun records, and failure-note templates,
 - Phase 3C: dataset freeze index, manifest, and report,
 - Phase 3D: results index and dashboard readiness review,
-- Phase 4A: artifact-backed analysis scaffold and normalized metrics table.
+- Phase 4A: artifact-backed analysis scaffold and normalized metrics table,
+- Phase 4B: component effect summaries, interaction contrasts, and dissertation table fragments.
 
 Next planned phase:
 
-- Phase 4B: component effect summaries.
+- Phase 4C: trajectory diagnostics.
 
 ## Documentation
 
@@ -105,6 +106,12 @@ Run the Phase 4A analysis scaffold:
 
 ```text
 ./scripts/run-phase4a-analysis.sh
+```
+
+Run the Phase 4B component effect summaries:
+
+```text
+./scripts/run-phase4b-component-effects.sh
 ```
 
 ## Package Layout

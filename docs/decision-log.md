@@ -1024,6 +1024,35 @@ Consequences:
 - `metrics_table.json`, `metrics_table.csv`, and `metrics_table.md` are produced only after input validation passes.
 - Token and cost metrics remain explicit missing values until model adapters provide those measurements.
 
+### DEC-037: Report Phase 4B Effects as Matched-Block Descriptive Contrasts
+
+Decision ID: DEC-037
+
+Date: 2026-06-08
+
+Status: accepted
+
+Context:
+
+Phase 4B must estimate component effects from the Phase 4A normalized metrics table. The current frozen dataset contains one task, one seed, one perturbation schedule, and all eight component cells, which is enough to validate the factorial contrast pipeline but not enough for strong inferential claims.
+
+Decision:
+
+Implement Phase 4B as a matched-block descriptive component-effect layer. A block is complete only when all eight component cells are present for the same task, run config, seed, perturbation schedule, and tool schema set. Main effects are reported as Level 2 mean minus Level 1 mean for factors A, B, and C. Interaction summaries compare positive-sign and negative-sign cells under two-level factorial coding. Incomplete blocks are documented and excluded from contrasts.
+
+Rationale:
+
+Matched-block contrasts protect component-level attribution because each component cell is compared under the same task and run context. Labelling the current outputs as descriptive prevents the dissertation from overstating evidence from a one-block dataset. Excluding incomplete blocks avoids biased effects caused by missing component cells.
+
+Consequences:
+
+- `summarize-component-effects` consumes `metrics_table.json`; it does not reread or mutate raw run artifacts.
+- `component_effects.json` records factor-level aggregates, main effects, matched blocks, incomplete blocks, and limitations.
+- `interaction_summary.json` records two-way and three-way descriptive interaction contrasts.
+- `dissertation_tables.md` provides table fragments for dissertation writing.
+- No confidence intervals are reported for the current one-block dataset.
+- Additional tasks, seeds, or perturbation schedules are required before Phase 4 can support inferential uncertainty estimates.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

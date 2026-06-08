@@ -8,7 +8,12 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable, Optional
 
-from avf.analysis import Phase4AAnalysisResult, analyze_phase4a_dataset
+from avf.analysis import (
+    Phase4AAnalysisResult,
+    Phase4BComponentEffectResult,
+    analyze_phase4a_dataset,
+    summarize_phase4b_component_effects,
+)
 from avf.contracts import TaskCase, ValidationError
 from avf.contracts.fixture_loader import load_json, validate_fixture_tree
 from avf.orchestration import (
@@ -290,6 +295,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional code version override for archived analysis artifacts.",
     )
 
+    summarize_effects = subparsers.add_parser(
+        "summarize-component-effects",
+        help="Run the Phase 4B component-effect summary over a Phase 4A metrics table.",
+    )
+    summarize_effects.add_argument(
+        "--metrics-table",
+        required=True,
+        help="Path to the Phase 4A metrics_table.json artifact.",
+    )
+    summarize_effects.add_argument(
+        "--analysis-root",
+        help="Directory where Phase 4B analysis artifacts should be written. Defaults to the metrics table analysis root.",
+    )
+    summarize_effects.add_argument(
+        "--generated-at",
+        help="Optional timestamp override for reproducible analysis tests.",
+    )
+    summarize_effects.add_argument(
+        "--code-version",
+        help="Optional code version override for archived component-effect artifacts.",
+    )
+
     return parser
 
 
@@ -472,6 +499,21 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase4a_analysis_cli_summary(result), indent=2, sort_keys=True))
         return 0 if result.analysis_input_manifest["artifact_hash_validation_passed"] else 1
 
+    if args.command == "summarize-component-effects":
+        try:
+            result = summarize_phase4b_component_effects(
+                metrics_table_path=Path(args.metrics_table),
+                analysis_root=Path(args.analysis_root) if args.analysis_root else None,
+                generated_at=args.generated_at,
+                code_version=args.code_version,
+            )
+        except ValidationError as exc:
+            print(f"Phase 4B component-effect summary failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase4b_effects_cli_summary(result), indent=2, sort_keys=True))
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -593,4 +635,21 @@ def _phase4a_analysis_cli_summary(result: Phase4AAnalysisResult) -> Dict[str, ob
         "metrics_table_json": str(result.artifacts.metrics_table_json),
         "metrics_table_csv": str(result.artifacts.metrics_table_csv),
         "metrics_table_markdown": str(result.artifacts.metrics_table_markdown),
+    }
+
+
+def _phase4b_effects_cli_summary(result: Phase4BComponentEffectResult) -> Dict[str, object]:
+    return {
+        "dataset_id": result.dataset_id,
+        "experiment_id": result.experiment_id,
+        "complete_block_count": result.component_effects["complete_block_count"],
+        "incomplete_block_count": result.component_effects["incomplete_block_count"],
+        "main_effect_count": len(result.component_effects["main_effects"]),
+        "interaction_count": len(result.interaction_summary["interactions"]),
+        "descriptive_only": result.component_effects["limitations"]["descriptive_only"],
+        "component_effects_json": str(result.artifacts.component_effects_json),
+        "component_effects_markdown": str(result.artifacts.component_effects_markdown),
+        "interaction_summary_json": str(result.artifacts.interaction_summary_json),
+        "interaction_summary_markdown": str(result.artifacts.interaction_summary_markdown),
+        "dissertation_tables": str(result.artifacts.dissertation_tables),
     }

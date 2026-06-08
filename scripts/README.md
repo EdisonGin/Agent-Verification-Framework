@@ -209,3 +209,14 @@ env PYTHONPATH=src python3 -c "from avf.analysis import analyze_phase4a_dataset;
 ```
 
 The Phase 4A command reads the frozen `dataset_index.json`, checks referenced artifact hashes, requires the Phase 3D readiness artifacts, and writes `analysis_config.json`, `analysis_input_manifest.json`, `metrics_table.json`, `metrics_table.csv`, and `metrics_table.md` under `artifacts/analysis/<dataset_id>/`.
+
+Phase 4B validates component effect summaries:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4b_script PYTHONPATH=src ./scripts/run-phase4b-component-effects.sh
+env PYTHONPATH=src python3 -m avf summarize-component-effects --metrics-table /private/tmp/avf_phase4b_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4b_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4b_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import summarize_phase4b_component_effects; print('phase4b component effects import ok')"
+```
+
+The Phase 4B command reads `metrics_table.json`, checks matched factorial block completeness, excludes incomplete blocks from contrasts, and writes `component_effects.json`, `component_effects.md`, `interaction_summary.json`, `interaction_summary.md`, and `dissertation_tables.md` under `artifacts/analysis/<dataset_id>/`.
