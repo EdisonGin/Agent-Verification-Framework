@@ -353,7 +353,7 @@ Phase 4C remains artifact-first. It derives diagnostics from stored traces and d
 
 ### Phase 4D: Failure Analysis and Final Analysis Report
 
-Status: planned.
+Status: complete.
 
 Goal:
 
@@ -380,6 +380,34 @@ Suggested branch name:
 ```text
 phase-4d-failure-analysis-report
 ```
+
+Implemented outputs:
+
+- `src/avf/analysis/failure_analysis.py` implements the Phase 4D failure-analysis layer,
+- `write_phase4d_failure_analysis_report` reads the Phase 4A `metrics_table.json`,
+- each run outcome is classified as `passed`, `task_failure`, `verifier_failure`, `artifact_failure`, `infrastructure_failure`, or `dataset_excluded`,
+- stored verification, metric, and trace artifacts are loaded from the metrics table evidence paths,
+- `failure_notes.json`, `rerun_records.json`, `pilot_qa_summary.json`, and `pilot_log.md` are consumed from the Phase 3 QA artifact directory,
+- exclusion and rerun decisions are linked back to QA artifacts and evidence paths,
+- artifact and infrastructure failures are preserved for auditability but excluded from ordinary task outcome counts,
+- `failure_analysis.json` records the taxonomy, run-level evidence, QA decision links, infrastructure separation policy, limitations, and acceptance criteria,
+- `failure_analysis.md` provides a human-readable failure-taxonomy report,
+- `analysis_report.md` provides the dissertation-facing analysis summary and states the descriptive claim level,
+- `python3 -m avf write-analysis-report` exposes the workflow through the CLI,
+- `scripts/run-phase4d-analysis-report.sh` runs the Phase 4C prerequisite workflow and then writes Phase 4D outputs,
+- tests cover direct report generation, CLI execution, QA/rerun linkage, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4d_script PYTHONPATH=src ./scripts/run-phase4d-analysis-report.sh
+env PYTHONPATH=src python3 -m avf write-analysis-report --metrics-table /private/tmp/avf_phase4d_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4d_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4d_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import write_phase4d_failure_analysis_report; print('phase4d failure analysis import ok')"
+```
+
+Phase 4D completes the initial artifact-backed analysis package. It does not introduce a results database or dashboard. Phase 4E remains conditional and should begin only if expanded datasets or dissertation review needs require repeated indexed querying or interactive drill-down.
 
 ### Phase 4E: Optional Results Read Model and Dashboard
 

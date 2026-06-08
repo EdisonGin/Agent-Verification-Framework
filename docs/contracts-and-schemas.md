@@ -923,6 +923,73 @@ Repeated tool calls are counted as adjacent same-tool repetitions in the ordered
 
 Rows labelled `agent_behavior` are included, hash-validated experiment outcomes. Rows labelled `dataset_excluded`, `trace_unavailable`, or `artifact_or_analysis_issue` are preserved for auditability but should not be interpreted as ordinary agent behavior.
 
+## Phase 4D Failure Analysis Artifacts
+
+Phase 4D introduces the derived failure-analysis and final-report artifacts over the Phase 4A metrics table and Phase 3 QA artifacts.
+
+The analysis entrypoint is:
+
+```text
+python3 -m avf write-analysis-report --metrics-table artifacts/analysis/<dataset_id>/metrics_table.json
+```
+
+Phase 4D writes:
+
+```text
+artifacts/analysis/<dataset_id>/failure_analysis.json
+artifacts/analysis/<dataset_id>/failure_analysis.md
+artifacts/analysis/<dataset_id>/analysis_report.md
+```
+
+`FailureAnalysis` records:
+
+| Field | Purpose |
+|---|---|
+| `schema_version` | Contract schema version |
+| `analysis_version` | Phase 4D analysis artifact version |
+| `dataset_id` | Frozen dataset analysed |
+| `experiment_id` | Source experiment |
+| `generated_at` | Analysis timestamp |
+| `code_version` | Code version used for failure analysis |
+| `metrics_table_artifact` | Source Phase 4A metrics table |
+| `analysis_artifacts_consumed` | Presence and paths for Phase 4A-4C derived artifacts |
+| `qa_artifacts_consumed` | Presence and paths for Phase 3 QA artifacts |
+| `taxonomy_counts` | Counts for `passed`, `task_failure`, `verifier_failure`, `artifact_failure`, `infrastructure_failure`, and `dataset_excluded` |
+| `failure_notes_by_class` | Failure-note records grouped by failure class |
+| `qa_decision_links` | Exclusion and rerun decisions linked to QA artifacts and evidence paths |
+| `run_outcomes` | One classified outcome row per metrics table row |
+| `infrastructure_separation` | Policy and counts separating infrastructure/artifact issues from ordinary task outcomes |
+| `analysis_summary` | Cross-reference summary from component effects, trajectory diagnostics, and pilot QA |
+| `limitations` | Claim level, descriptive-only flag, and confidence-interval policy |
+| `analysis_acceptance_criteria` | Phase 4D acceptance criteria evidence |
+
+Each `run_outcome` records:
+
+- run, task, seed, perturbation schedule, component, inclusion status, and dataset decision,
+- failure class,
+- whether the row is included as an ordinary task outcome,
+- trace status,
+- task success,
+- verification pass/fail,
+- verifier failure reasons,
+- analysis issues,
+- evidence paths for trace, verification, metrics, report, and manifest artifacts.
+
+The Phase 4D failure taxonomy separates ordinary agent outcomes from infrastructure evidence:
+
+| Class | Interpretation |
+|---|---|
+| `passed` | Included run with passing verification and successful task metrics |
+| `task_failure` | Included run where metric evidence records task failure |
+| `verifier_failure` | Included run where the verifier fails the run |
+| `artifact_failure` | Missing, invalid, mismatched, or hash-invalid artifact evidence |
+| `infrastructure_failure` | Trace exists but records non-completed execution status |
+| `dataset_excluded` | Row preserved in the dataset but excluded by dataset policy |
+
+`artifact_failure`, `infrastructure_failure`, and `dataset_excluded` rows are preserved for auditability but are not counted as ordinary task outcomes unless a future analysis explicitly justifies that policy change.
+
+`failure_analysis.md` is the human-readable failure taxonomy report. `analysis_report.md` is the dissertation-facing summary that combines the Phase 4A metrics table, Phase 4B component summaries, Phase 4C trajectory diagnostics, QA evidence, and limitations. For the current eight-run dataset, Phase 4D states a descriptive claim level and does not report inferential confidence intervals.
+
 ## Initial Storage Layout
 
 The planned storage layout is:
