@@ -295,7 +295,7 @@ Phase 4B remains descriptive for the current dataset. It does not report confide
 
 ### Phase 4C: Trajectory Diagnostics
 
-Status: planned.
+Status: complete.
 
 Goal:
 
@@ -325,6 +325,31 @@ Suggested branch name:
 ```text
 phase-4c-trajectory-diagnostics
 ```
+
+Implemented outputs:
+
+- `src/avf/analysis/trajectory_diagnostics.py` implements Phase 4C trajectory diagnostics,
+- `diagnose_phase4c_trajectories` reads the Phase 4A `metrics_table.json`,
+- each diagnostic row loads the stored `RunTrace` artifact referenced by the metrics table,
+- `trajectory_diagnostics.json` records heuristic definitions, per-run trajectory rows, component summaries, scope counts, and acceptance criteria,
+- `trajectory_diagnostics.md` provides a human-readable diagnostics report,
+- deterministic heuristics count action sequences, tool sequences, observation signatures, adjacent repeated actions, adjacent repeated tool calls, adjacent repeated observations, recovery events, final-answer presence, and goal drift,
+- diagnostics are labelled by scope so included agent-behavior rows are separated from excluded, unavailable, or artifact/analysis issue rows,
+- `python3 -m avf diagnose-trajectories` exposes the workflow through the CLI,
+- `scripts/run-phase4c-trajectory-diagnostics.sh` runs the Phase 4B prerequisite workflow and then writes Phase 4C outputs,
+- tests cover direct diagnostics, CLI execution, deterministic repeated tool/observation counting, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4c_script PYTHONPATH=src ./scripts/run-phase4c-trajectory-diagnostics.sh
+env PYTHONPATH=src python3 -m avf diagnose-trajectories --metrics-table /private/tmp/avf_phase4c_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4c_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4c_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import diagnose_phase4c_trajectories; print('phase4c trajectory diagnostics import ok')"
+```
+
+Phase 4C remains artifact-first. It derives diagnostics from stored traces and does not mutate raw run artifacts or introduce a database/dashboard.
 
 ### Phase 4D: Failure Analysis and Final Analysis Report
 

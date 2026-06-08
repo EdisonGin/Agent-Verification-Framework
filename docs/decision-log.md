@@ -1053,6 +1053,34 @@ Consequences:
 - No confidence intervals are reported for the current one-block dataset.
 - Additional tasks, seeds, or perturbation schedules are required before Phase 4 can support inferential uncertainty estimates.
 
+### DEC-038: Derive Phase 4C Trajectory Diagnostics from Stored RunTrace Artifacts
+
+Decision ID: DEC-038
+
+Date: 2026-06-08
+
+Status: accepted
+
+Context:
+
+Phase 4C must explain how component cells behave during execution, not only whether they pass. The framework already stores complete `RunTrace` artifacts and Phase 4A metrics rows link each run to its trace path.
+
+Decision:
+
+Implement Phase 4C as a read-only trajectory diagnostic layer over `metrics_table.json` and the referenced stored `RunTrace` artifacts. Record heuristic definitions before diagnostic rows. Count adjacent repeated action names, adjacent repeated tool calls, and adjacent repeated observation signatures deterministically. Label each row by diagnostic scope so included agent behavior is separated from excluded, unavailable, or artifact/analysis issue rows.
+
+Rationale:
+
+Trace-derived diagnostics are most useful for dissertation interpretation when every diagnostic links back to a run ID, trace path, and event IDs. Explicit heuristic definitions make the analysis auditable. Scope labels prevent infrastructure or artifact problems from being mistaken for agent behavior.
+
+Consequences:
+
+- `diagnose-trajectories` consumes the Phase 4A metrics table and stored trace artifacts.
+- `trajectory_diagnostics.json` records heuristic definitions, per-run diagnostics, component summaries, trace drill-down references, and acceptance criteria.
+- `trajectory_diagnostics.md` provides a human-readable report for dissertation writing.
+- Repetition and observation repeat counts are deterministic and wall-clock independent.
+- Phase 4C does not introduce a database or dashboard.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library
