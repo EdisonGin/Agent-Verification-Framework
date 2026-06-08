@@ -242,3 +242,14 @@ env PYTHONPATH=src python3 -c "from avf.analysis import write_phase4d_failure_an
 ```
 
 The Phase 4D command reads `metrics_table.json`, consumes Phase 3 QA records plus stored verification, metric, and trace artifacts, separates task/verifier failures from artifact or infrastructure failures, links exclusion and rerun decisions back to QA artifacts, and writes `failure_analysis.json`, `failure_analysis.md`, and `analysis_report.md` under `artifacts/analysis/<dataset_id>/`.
+
+Phase 4E validates dashboard/read-model artifact generation:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4e_script PYTHONPATH=src ./scripts/run-phase4e-dashboard-read-model.sh
+env PYTHONPATH=src python3 -m avf write-dashboard-read-model --metrics-table /private/tmp/avf_phase4e_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4e_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4e_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import write_phase4e_dashboard_read_model; print('phase4e dashboard read model import ok')"
+```
+
+The Phase 4E command reads `metrics_table.json`, Phase 4B component effects, Phase 4C trajectory diagnostics, Phase 4D failure analysis, and Phase 3D query/decision artifacts. It writes `read_model_decision.json`, `results_read_model.json`, `dashboard_data.json`, and `dashboard_snapshot.md` under `artifacts/analysis/<dataset_id>/`. For the current dataset it does not materialize a database or live dashboard because Phase 3D records the filesystem artifacts as sufficient.

@@ -990,6 +990,72 @@ The Phase 4D failure taxonomy separates ordinary agent outcomes from infrastruct
 
 `failure_analysis.md` is the human-readable failure taxonomy report. `analysis_report.md` is the dissertation-facing summary that combines the Phase 4A metrics table, Phase 4B component summaries, Phase 4C trajectory diagnostics, QA evidence, and limitations. For the current eight-run dataset, Phase 4D states a descriptive claim level and does not report inferential confidence intervals.
 
+## Phase 4E Dashboard Read-Model Artifacts
+
+Phase 4E introduces derived dashboard/read-model artifacts over the completed Phase 4 analysis package. These artifacts are presentation and query-support artifacts; they are not raw results and are not the dissertation source of truth.
+
+The analysis entrypoint is:
+
+```text
+python3 -m avf write-dashboard-read-model --metrics-table artifacts/analysis/<dataset_id>/metrics_table.json
+```
+
+Phase 4E writes:
+
+```text
+artifacts/analysis/<dataset_id>/read_model_decision.json
+artifacts/analysis/<dataset_id>/results_read_model.json
+artifacts/analysis/<dataset_id>/dashboard_data.json
+artifacts/analysis/<dataset_id>/dashboard_snapshot.md
+```
+
+`ReadModelDecision` records:
+
+| Field | Purpose |
+|---|---|
+| `schema_version` | Contract schema version |
+| `analysis_version` | Phase 4E artifact version |
+| `dataset_id` | Frozen dataset analysed |
+| `experiment_id` | Source experiment |
+| `generated_at` | Artifact generation timestamp |
+| `code_version` | Code version used for generation |
+| `metrics_table_artifact` | Source Phase 4A metrics table |
+| `source_artifacts` | Paths and existence checks for Phase 3D and Phase 4A-4D inputs |
+| `phase3d_decision_summary` | Filesystem/database/dashboard decision copied from `results_index_decision.json` |
+| `phase4_query_needs` | Required dashboard views, filters, groupings, joins, and current dataset scale |
+| `implementation_decision` | Whether a database was materialized and which read-model/dashboard artifact type is used |
+| `source_of_truth_policy` | Explicit record that read-model/dashboard artifacts are not authoritative |
+| `analysis_acceptance_criteria` | Phase 4E acceptance criteria evidence |
+
+For the current dataset, `implementation_decision.database_materialized=false` and `read_model_backend=json_derived_artifact`. This follows the Phase 3D decision that filesystem artifacts remain sufficient.
+
+`ResultsReadModel` records:
+
+- one compact row per `metrics_table.json` row,
+- task, seed, perturbation schedule, component ID, and factor levels,
+- inclusion and dataset decision fields,
+- task success and verification outcome,
+- failure class joined from `failure_analysis.json`,
+- diagnostic scope and drill-down data joined from `trajectory_diagnostics.json`,
+- evidence paths for trace, verification, metrics, report, and manifest artifacts,
+- component summaries,
+- indexes by component ID, task ID, failure class, and diagnostic scope,
+- source artifact references and source-of-truth policy.
+
+`DashboardData` records static view data for:
+
+- dataset overview,
+- component comparison,
+- task and seed filters,
+- verification outcome breakdown,
+- trajectory diagnostic drill-down,
+- failure taxonomy review,
+- artifact integrity status.
+
+Dashboard views read from `results_read_model.json` and derived Phase 4 artifacts. They do not replace `dataset_index.json`, raw run artifacts, QA records, or Phase 4 analysis outputs.
+
+`dashboard_snapshot.md` is a human-readable static dashboard snapshot for dissertation review. It is intentionally not a live web dashboard.
+
 ## Initial Storage Layout
 
 The planned storage layout is:

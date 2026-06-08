@@ -13,10 +13,12 @@ from avf.analysis import (
     Phase4BComponentEffectResult,
     Phase4CTrajectoryDiagnosticResult,
     Phase4DFailureAnalysisResult,
+    Phase4EReadModelResult,
     analyze_phase4a_dataset,
     diagnose_phase4c_trajectories,
     summarize_phase4b_component_effects,
     write_phase4d_failure_analysis_report,
+    write_phase4e_dashboard_read_model,
 )
 from avf.contracts import TaskCase, ValidationError
 from avf.contracts.fixture_loader import load_json, validate_fixture_tree
@@ -365,6 +367,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional code version override for archived final report artifacts.",
     )
 
+    write_read_model = subparsers.add_parser(
+        "write-dashboard-read-model",
+        help="Run the Phase 4E read-model and static dashboard snapshot over Phase 4 analysis artifacts.",
+    )
+    write_read_model.add_argument(
+        "--metrics-table",
+        required=True,
+        help="Path to the Phase 4A metrics_table.json artifact.",
+    )
+    write_read_model.add_argument(
+        "--analysis-root",
+        help="Directory where Phase 4E dashboard/read-model artifacts should be written.",
+    )
+    write_read_model.add_argument(
+        "--generated-at",
+        help="Optional timestamp override for reproducible dashboard/read-model artifacts.",
+    )
+    write_read_model.add_argument(
+        "--code-version",
+        help="Optional code version override for archived dashboard/read-model artifacts.",
+    )
+
     return parser
 
 
@@ -592,6 +616,21 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase4d_report_cli_summary(result), indent=2, sort_keys=True))
         return 0
 
+    if args.command == "write-dashboard-read-model":
+        try:
+            result = write_phase4e_dashboard_read_model(
+                metrics_table_path=Path(args.metrics_table),
+                analysis_root=Path(args.analysis_root) if args.analysis_root else None,
+                generated_at=args.generated_at,
+                code_version=args.code_version,
+            )
+        except ValidationError as exc:
+            print(f"Phase 4E dashboard read model failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase4e_read_model_cli_summary(result), indent=2, sort_keys=True))
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -756,4 +795,23 @@ def _phase4d_report_cli_summary(result: Phase4DFailureAnalysisResult) -> Dict[st
         "failure_analysis_json": str(result.artifacts.failure_analysis_json),
         "failure_analysis_markdown": str(result.artifacts.failure_analysis_markdown),
         "analysis_report": str(result.artifacts.analysis_report),
+    }
+
+
+def _phase4e_read_model_cli_summary(result: Phase4EReadModelResult) -> Dict[str, object]:
+    return {
+        "dataset_id": result.dataset_id,
+        "experiment_id": result.experiment_id,
+        "row_count": result.results_read_model["row_count"],
+        "database_materialized": result.read_model_decision["implementation_decision"][
+            "database_materialized"
+        ],
+        "read_model_backend": result.read_model_decision["implementation_decision"]["read_model_backend"],
+        "dashboard_view_count": len(result.dashboard_data["views"]),
+        "dashboard_not_source_of_truth": result.dashboard_data["source_policy"]["dashboard_is_source_of_truth"]
+        is False,
+        "read_model_decision_json": str(result.artifacts.read_model_decision_json),
+        "results_read_model_json": str(result.artifacts.results_read_model_json),
+        "dashboard_data_json": str(result.artifacts.dashboard_data_json),
+        "dashboard_snapshot_markdown": str(result.artifacts.dashboard_snapshot_markdown),
     }

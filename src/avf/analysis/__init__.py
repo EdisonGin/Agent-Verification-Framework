@@ -25,12 +25,19 @@ from .failure_analysis import (
     Phase4DFailureAnalysisResult,
     write_phase4d_failure_analysis_report,
 )
+from .dashboard_read_model import (
+    PHASE4E_ANALYSIS_VERSION,
+    Phase4EReadModelArtifacts,
+    Phase4EReadModelResult,
+    write_phase4e_dashboard_read_model,
+)
 
 __all__ = [
     "PHASE4A_ANALYSIS_VERSION",
     "PHASE4B_ANALYSIS_VERSION",
     "PHASE4C_ANALYSIS_VERSION",
     "PHASE4D_ANALYSIS_VERSION",
+    "PHASE4E_ANALYSIS_VERSION",
     "Phase4AAnalysisArtifacts",
     "Phase4AAnalysisResult",
     "Phase4BComponentEffectArtifacts",
@@ -39,9 +46,12 @@ __all__ = [
     "Phase4CTrajectoryDiagnosticResult",
     "Phase4DFailureAnalysisArtifacts",
     "Phase4DFailureAnalysisResult",
+    "Phase4EReadModelArtifacts",
+    "Phase4EReadModelResult",
     "analyze_phase4a_dataset",
     "diagnose_phase4c_trajectories",
     "infer_artifact_root",
     "summarize_phase4b_component_effects",
     "write_phase4d_failure_analysis_report",
+    "write_phase4e_dashboard_read_model",
 ]

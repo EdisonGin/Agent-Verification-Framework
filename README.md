@@ -34,11 +34,12 @@ Implemented:
 - Phase 4A: artifact-backed analysis scaffold and normalized metrics table,
 - Phase 4B: component effect summaries, interaction contrasts, and dissertation table fragments,
 - Phase 4C: trace-derived trajectory diagnostics,
-- Phase 4D: failure analysis and final analysis report.
+- Phase 4D: failure analysis and final analysis report,
+- Phase 4E: read-only dashboard/read-model artifacts over the completed Phase 4 analysis package.
 
 Next planned phase:
 
-- Phase 4E: optional read-only results model or dashboard, only if expanded analysis needs justify it.
+- Phase 5: dissertation finalisation and optional expanded experiment execution if stronger evidence is required.
 
 ## Documentation
 
@@ -126,6 +127,12 @@ Run the Phase 4D failure analysis and final report:
 
 ```text
 ./scripts/run-phase4d-analysis-report.sh
+```
+
+Run the Phase 4E dashboard/read-model artifact generation:
+
+```text
+./scripts/run-phase4e-dashboard-read-model.sh
 ```
 
 ## Package Layout

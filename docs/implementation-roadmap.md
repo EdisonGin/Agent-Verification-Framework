@@ -141,7 +141,7 @@ Goal: compute outcome metrics, trajectory diagnostics, and component effect esti
 
 Detailed planning for this phase is maintained in `phase-4-analysis.md`.
 
-Phase 4 consumes the frozen Phase 3 dataset through `dataset_index.json` and writes derived analysis artifacts under `artifacts/analysis/<dataset_id>/`. Phase 4A implements a read-only analysis scaffold and normalized metrics table over the frozen artifacts. Phase 4B implements descriptive component effect summaries, matched-block completeness checks, factorial interaction contrasts, and dissertation table fragments over the Phase 4A metrics table. Phase 4C implements trace-derived trajectory diagnostics over stored `RunTrace` artifacts referenced by the metrics table. Phase 4D implements failure taxonomy analysis, QA decision linkage, infrastructure/artifact failure separation, and the dissertation-facing analysis report. Database and dashboard work remains conditional: the current eight-run dataset can be analysed directly from filesystem artifacts, so a read-only results index or dashboard should begin only if Phase 4 query needs or expanded experiment volume justify it.
+Phase 4 consumes the frozen Phase 3 dataset through `dataset_index.json` and writes derived analysis artifacts under `artifacts/analysis/<dataset_id>/`. Phase 4A implements a read-only analysis scaffold and normalized metrics table over the frozen artifacts. Phase 4B implements descriptive component effect summaries, matched-block completeness checks, factorial interaction contrasts, and dissertation table fragments over the Phase 4A metrics table. Phase 4C implements trace-derived trajectory diagnostics over stored `RunTrace` artifacts referenced by the metrics table. Phase 4D implements failure taxonomy analysis, QA decision linkage, infrastructure/artifact failure separation, and the dissertation-facing analysis report. Phase 4E implements a derived JSON read model and static dashboard snapshot over the completed Phase 4 analysis package while recording that the current dataset still does not justify a live database or dashboard.
 
 Required metrics:
 
@@ -162,7 +162,7 @@ Required analysis:
 
 Milestone M4: analysis package with interpretable component effects, validated trajectory diagnostics, and failure analysis.
 
-Deliverable D4: analysis report covering outcome metrics, trajectory diagnostics, effect sizes, interaction estimates where justified, failure taxonomy, QA evidence, and limitations.
+Deliverable D4: analysis package covering outcome metrics, trajectory diagnostics, effect sizes, interaction estimates where justified, failure taxonomy, QA evidence, dashboard/read-model artifacts, and limitations.
 
 ### Phase 5: Dissertation Finalisation
 
