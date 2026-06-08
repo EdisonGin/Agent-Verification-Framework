@@ -30,11 +30,12 @@ Implemented:
 - Phase 3A: experiment matrix and full factorial runner,
 - Phase 3B: pilot QA, rerun records, and failure-note templates,
 - Phase 3C: dataset freeze index, manifest, and report,
-- Phase 3D: results index and dashboard readiness review.
+- Phase 3D: results index and dashboard readiness review,
+- Phase 4A: artifact-backed analysis scaffold and normalized metrics table.
 
 Next planned phase:
 
-- Phase 4: analysis and diagnostics.
+- Phase 4B: component effect summaries.
 
 ## Documentation
 
@@ -48,6 +49,7 @@ Start with:
 - `docs/phase-1-infrastructure.md`
 - `docs/phase-2-infrastructure.md`
 - `docs/phase-3-infrastructure.md`
+- `docs/phase-4-analysis.md`
 - `docs/decision-log.md`
 
 Source architecture diagrams:
@@ -99,6 +101,12 @@ Run the Phase 3D readiness review:
 ./scripts/run-phase3d-review.sh
 ```
 
+Run the Phase 4A analysis scaffold:
+
+```text
+./scripts/run-phase4a-analysis.sh
+```
+
 ## Package Layout
 
 ```text
@@ -107,6 +115,7 @@ src/avf/
   orchestration/
   mock_services/
   agents/
+  analysis/
   tracing/
   verification/
   metrics/

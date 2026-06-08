@@ -198,3 +198,14 @@ env PYTHONPATH=src python3 -c "from avf.orchestration import run_phase3d_readine
 ```
 
 The Phase 3D review writes `storage_volume_review.json`, `query_requirements.json`, `results_index_decision.json`, `dashboard_requirements.md`, and `phase3d_review.md` under `artifacts/experiments/<experiment_id>/`. The current decision keeps the filesystem-backed dataset index as sufficient and defers database/dashboard implementation.
+
+Phase 4A validates the artifact-backed analysis scaffold:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4a_script PYTHONPATH=src ./scripts/run-phase4a-analysis.sh
+env PYTHONPATH=src python3 -m avf analyze-dataset --dataset-index /private/tmp/avf_phase4a_script/experiments/phase3_full_factorial_v1/dataset_index.json --artifact-root /private/tmp/avf_phase4a_script --analysis-root /private/tmp/avf_phase4a_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4a_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import analyze_phase4a_dataset; print('phase4a analysis import ok')"
+```
+
+The Phase 4A command reads the frozen `dataset_index.json`, checks referenced artifact hashes, requires the Phase 3D readiness artifacts, and writes `analysis_config.json`, `analysis_input_manifest.json`, `metrics_table.json`, `metrics_table.csv`, and `metrics_table.md` under `artifacts/analysis/<dataset_id>/`.
