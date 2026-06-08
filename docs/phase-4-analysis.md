@@ -236,7 +236,7 @@ Phase 4A remains artifact-first. It does not introduce a results database or das
 
 ### Phase 4B: Component Effect Summaries
 
-Status: planned.
+Status: complete.
 
 Goal:
 
@@ -264,6 +264,34 @@ Suggested branch name:
 ```text
 phase-4b-component-effect-summaries
 ```
+
+Implemented outputs:
+
+- `src/avf/analysis/component_effects.py` implements Phase 4B component-effect analysis,
+- `summarize_phase4b_component_effects` reads the Phase 4A `metrics_table.json`,
+- matched blocks are keyed by task, run config, seed, perturbation schedule, and tool schema set,
+- complete blocks require all eight `2^3` component cells,
+- incomplete blocks are flagged and excluded from contrasts,
+- `component_effects.json` records factor definitions, factor-level summaries, main effects, matched-block coverage, limitations, and acceptance criteria,
+- `component_effects.md` provides a human-readable main-effect report,
+- `interaction_summary.json` records two-way and three-way factorial interaction contrasts,
+- `interaction_summary.md` provides a human-readable interaction report,
+- `dissertation_tables.md` provides compact tables for matched-block coverage, primary main effects, and interaction contrasts,
+- `python3 -m avf summarize-component-effects` exposes the workflow through the CLI,
+- `scripts/run-phase4b-component-effects.sh` runs the Phase 4A prerequisite workflow and then writes Phase 4B outputs,
+- tests cover direct summary generation, CLI execution, incomplete-block handling, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4b_script PYTHONPATH=src ./scripts/run-phase4b-component-effects.sh
+env PYTHONPATH=src python3 -m avf summarize-component-effects --metrics-table /private/tmp/avf_phase4b_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4b_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4b_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import summarize_phase4b_component_effects; print('phase4b component effects import ok')"
+```
+
+Phase 4B remains descriptive for the current dataset. It does not report confidence intervals because the current experiment contains only one complete matched block.
 
 ### Phase 4C: Trajectory Diagnostics
 

@@ -808,6 +808,68 @@ Core fields include:
 
 The CSV and Markdown outputs are projections of the same normalized metrics table.
 
+## Phase 4B Component Effect Artifacts
+
+Phase 4B introduces derived component-effect artifacts over the Phase 4A metrics table.
+
+The analysis entrypoint is:
+
+```text
+python3 -m avf summarize-component-effects --metrics-table artifacts/analysis/<dataset_id>/metrics_table.json
+```
+
+Phase 4B writes:
+
+```text
+artifacts/analysis/<dataset_id>/component_effects.json
+artifacts/analysis/<dataset_id>/component_effects.md
+artifacts/analysis/<dataset_id>/interaction_summary.json
+artifacts/analysis/<dataset_id>/interaction_summary.md
+artifacts/analysis/<dataset_id>/dissertation_tables.md
+```
+
+`ComponentEffects` records:
+
+| Field | Purpose |
+|---|---|
+| `schema_version` | Contract schema version |
+| `analysis_version` | Phase 4B analysis artifact version |
+| `dataset_id` | Frozen dataset analysed |
+| `experiment_id` | Source experiment |
+| `generated_at` | Analysis timestamp |
+| `code_version` | Code version used for component-effect analysis |
+| `metrics_table_artifact` | Source Phase 4A metrics table |
+| `complete_block_count` | Matched blocks containing all eight component cells |
+| `incomplete_block_count` | Blocks missing one or more component cells |
+| `factor_definitions` | A/B/C factor definitions and level mappings |
+| `metric_definitions` | Metrics included in descriptive contrasts |
+| `factor_level_summaries` | Per-factor, per-level metric aggregates |
+| `main_effects` | Level 2 minus Level 1 contrasts for A, B, and C |
+| `matched_blocks` | Complete block metadata and traceable run IDs |
+| `incomplete_blocks` | Missing/duplicate component cell evidence |
+| `limitations` | Descriptive-only and no-confidence-interval rationale |
+| `analysis_acceptance_criteria` | Phase 4B acceptance criteria evidence |
+
+`InteractionSummary` records:
+
+| Field | Purpose |
+|---|---|
+| `dataset_id` | Frozen dataset analysed |
+| `experiment_id` | Source experiment |
+| `complete_block_count` | Number of blocks used in interaction contrasts |
+| `interactions` | `A:B`, `A:C`, `B:C`, and `A:B:C` descriptive contrasts |
+| `limitations` | Descriptive-only and no-confidence-interval rationale |
+
+Matched block keys use:
+
+```text
+task_id + run_config_id + seed + perturbation_schedule_id + tool_names
+```
+
+Only included runs with passing artifact hash validation are eligible. Incomplete matched blocks are listed in the artifacts but excluded from main-effect and interaction contrasts.
+
+For the current dataset, Phase 4B reports descriptive component effects only. Confidence intervals and inferential uncertainty estimates are not reported until additional tasks, seeds, or perturbation schedules create enough matched blocks.
+
 ## Initial Storage Layout
 
 The planned storage layout is:
