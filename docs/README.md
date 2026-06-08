@@ -15,6 +15,7 @@ The documents are structured to support both implementation and dissertation wri
 | `phase-1-infrastructure.md` | Detailed Phase 1 execution plan and acceptance criteria |
 | `phase-2-infrastructure.md` | Detailed Phase 2 modular component and storage plan |
 | `phase-3-infrastructure.md` | Detailed Phase 3 experimental execution, QA, and dataset freeze plan |
+| `phase-4-analysis.md` | Detailed Phase 4 analysis, diagnostics, component effects, and dashboard timing plan |
 | `decision-log.md` | Record of major design and methodology decisions |
 
 ## Source Materials
@@ -34,7 +35,8 @@ The documents are structured to support both implementation and dissertation wri
 5. `phase-1-infrastructure.md`
 6. `phase-2-infrastructure.md`
 7. `phase-3-infrastructure.md`
-8. `decision-log.md`
+8. `phase-4-analysis.md`
+9. `decision-log.md`
 
 ## Dissertation Use
 
@@ -45,4 +47,5 @@ These documents can support the implementation chapter by explaining:
 - the architecture and layer responsibilities,
 - the contract-first methodology,
 - the reproducibility controls used from Phase 1,
-- the decisions made to protect controlled component-level evaluation.
+- the decisions made to protect controlled component-level evaluation,
+- the analysis plan for converting frozen run artifacts into dissertation evidence.

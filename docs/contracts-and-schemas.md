@@ -741,6 +741,73 @@ artifacts/experiments/<experiment_id>/dashboard_requirements.md
 artifacts/experiments/<experiment_id>/phase3d_review.md
 ```
 
+## Phase 4A Analysis Artifacts
+
+Phase 4A introduces derived analysis artifacts over the frozen dataset. These artifacts are not raw run artifacts and are not the source of truth. They are reproducible outputs from `dataset_index.json`, `frozen_dataset_manifest.json`, Phase 3 QA/readiness artifacts, and the per-run trace, verification, metrics, report, and manifest artifacts.
+
+The analysis entrypoint is:
+
+```text
+python3 -m avf analyze-dataset --dataset-index artifacts/experiments/<experiment_id>/dataset_index.json
+```
+
+Phase 4A writes:
+
+```text
+artifacts/analysis/<dataset_id>/analysis_config.json
+artifacts/analysis/<dataset_id>/analysis_input_manifest.json
+artifacts/analysis/<dataset_id>/metrics_table.json
+artifacts/analysis/<dataset_id>/metrics_table.csv
+artifacts/analysis/<dataset_id>/metrics_table.md
+```
+
+`AnalysisConfig` records:
+
+| Field | Purpose |
+|---|---|
+| `schema_version` | Contract schema version |
+| `analysis_version` | Phase 4A analysis artifact version |
+| `analysis_id` | Analysis run identifier |
+| `dataset_id` | Frozen dataset analysed |
+| `experiment_id` | Source experiment |
+| `dataset_index_path` | Path to the source dataset index |
+| `artifact_root` | Root used to resolve relative artifact paths |
+| `analysis_root` | Root where derived artifacts are written |
+| `generated_at` | Analysis timestamp |
+| `code_version` | Code version used for analysis |
+| `execution_policy` | Records that experiments are not rerun and no database/dashboard is required |
+
+`AnalysisInputManifest` records:
+
+| Field | Purpose |
+|---|---|
+| `dataset_index_artifact` | Hash and size of the source dataset index |
+| `frozen_dataset_manifest_artifact` | Hash and size of the frozen manifest |
+| `companion_artifacts` | Phase 3C/3D QA, freeze, and readiness artifacts consumed by analysis |
+| `run_artifact_checks` | Per-run hash checks for trace, verification, metrics, report, and manifest artifacts |
+| `artifact_hash_validation_passed` | Whether all referenced run artifacts match the frozen index |
+| `integrity_issues` | Hash, size, or missing-artifact issues |
+| `analysis_acceptance_criteria` | Phase 4A acceptance criteria evidence |
+
+If any frozen run artifact hash or size no longer matches the dataset index, Phase 4A writes `analysis_input_manifest.json` and fails before writing metrics tables.
+
+`MetricsTable` records one row per dataset index record.
+
+Core fields include:
+
+- run and dataset identifiers,
+- inclusion status and dataset decision,
+- task, seed, perturbation schedule, and component factor levels,
+- artifact validation and hash-validation status,
+- task success and verification outcome,
+- verifier metadata,
+- latency, step count, tool-call count, goal drift, repetition rate, and recovery steps,
+- trace status, trace event count, and final-answer presence,
+- explicit `token_usage=null` and `cost_usage=null` values until model adapters expose those metrics,
+- `missing_metrics` and `analysis_issues`.
+
+The CSV and Markdown outputs are projections of the same normalized metrics table.
+
 ## Initial Storage Layout
 
 The planned storage layout is:

@@ -139,6 +139,10 @@ Deliverable D3: curated execution-trace dataset with pilot logs, rerun records, 
 
 Goal: compute outcome metrics, trajectory diagnostics, and component effect estimates.
 
+Detailed planning for this phase is maintained in `phase-4-analysis.md`.
+
+Phase 4 consumes the frozen Phase 3 dataset through `dataset_index.json` and writes derived analysis artifacts under `artifacts/analysis/<dataset_id>/`. Phase 4A implements a read-only analysis scaffold and normalized metrics table over the frozen artifacts. Component effect summaries, trajectory diagnostics, failure analysis, and dissertation-ready analysis reports follow after the metrics table is validated. Database and dashboard work remains conditional: the current eight-run dataset can be analysed directly from filesystem artifacts, so a read-only results index or dashboard should begin only if Phase 4 query needs or expanded experiment volume justify it.
+
 Required metrics:
 
 - task success,

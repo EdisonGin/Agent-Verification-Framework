@@ -967,6 +967,63 @@ Consequences:
 - Any future database must be a read-only index over frozen filesystem artifacts.
 - Phase 4 analysis can start from `dataset_index.json`.
 
+### DEC-035: Start Phase 4 with Artifact-Backed Analysis
+
+Decision ID: DEC-035
+
+Date: 2026-06-08
+
+Status: accepted
+
+Context:
+
+Phase 3C freezes the accepted dataset and Phase 3D records that the current eight-run artifact set remains suitable for direct filesystem analysis. Phase 4 now needs to convert frozen run artifacts into dissertation evidence: metrics tables, component effects, trajectory diagnostics, failure analysis, and final analysis reports.
+
+Decision:
+
+Begin Phase 4 with a read-only analysis scaffold over `dataset_index.json`. Write derived outputs under `artifacts/analysis/<dataset_id>/`. Do not implement a database or dashboard as the first Phase 4 step. Revisit a read-only results index or dashboard only after the analysis table and component summaries reveal concrete query or review needs.
+
+Rationale:
+
+The frozen dataset index already contains the run metadata, artifact paths, hashes, inclusion decisions, and component cell metadata needed for the initial analysis package. Starting with artifact-backed analysis preserves reproducibility, keeps the source of truth clear, and avoids designing dashboard/database infrastructure around immature analysis questions.
+
+Consequences:
+
+- Phase 4A should implement dataset ingestion, hash validation, and normalized metrics tables first.
+- Phase 4B should implement component effects and matched contrasts after the metrics table exists.
+- Phase 4C should derive trajectory diagnostics from stored traces.
+- Phase 4D should consolidate failure analysis and dissertation-ready reporting.
+- Phase 4E remains conditional and must use a read-only index over frozen artifacts if implemented.
+- The current eight-run dataset should be labelled descriptive until more tasks, seeds, or perturbation schedules are available.
+
+### DEC-036: Fail Phase 4A Analysis on Frozen Artifact Hash Mismatch
+
+Decision ID: DEC-036
+
+Date: 2026-06-08
+
+Status: accepted
+
+Context:
+
+Phase 4A creates derived analysis artifacts from the frozen Phase 3 dataset. The dissertation analysis must not silently proceed if a raw run artifact has changed after dataset freeze.
+
+Decision:
+
+Implement Phase 4A as a read-only analysis scaffold that validates `dataset_index.json`, requires the Phase 3C/3D companion artifacts, checks each referenced run artifact's hash and size, writes `analysis_input_manifest.json`, and fails before writing metrics tables if any frozen artifact check fails.
+
+Rationale:
+
+The analysis table is only valid if it is derived from the frozen dataset. Writing the input manifest before failing preserves evidence about the integrity issue, while blocking metrics output prevents corrupted or amended artifacts from entering dissertation results unnoticed.
+
+Consequences:
+
+- `analyze-dataset` does not rerun experiments.
+- The analysis code reads from the filesystem artifact store and does not introduce a database or dashboard.
+- `analysis_input_manifest.json` records all per-run hash checks.
+- `metrics_table.json`, `metrics_table.csv`, and `metrics_table.md` are produced only after input validation passes.
+- Token and cost metrics remain explicit missing values until model adapters provide those measurements.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

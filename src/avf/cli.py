@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Iterable, Optional
 
+from avf.analysis import Phase4AAnalysisResult, analyze_phase4a_dataset
 from avf.contracts import TaskCase, ValidationError
 from avf.contracts.fixture_loader import load_json, validate_fixture_tree
 from avf.orchestration import (
@@ -259,6 +260,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Artifact-byte threshold above which a SQLite read model should be planned.",
     )
 
+    analyze_dataset = subparsers.add_parser(
+        "analyze-dataset",
+        help="Run the Phase 4A read-only analysis scaffold over a frozen dataset index.",
+    )
+    analyze_dataset.add_argument(
+        "--dataset-index",
+        required=True,
+        help="Path to the frozen dataset_index.json artifact.",
+    )
+    analyze_dataset.add_argument(
+        "--artifact-root",
+        help="Artifact root used to resolve relative artifact paths. Inferred from dataset index by default.",
+    )
+    analyze_dataset.add_argument(
+        "--analysis-root",
+        help="Directory where analysis artifacts should be written. Defaults to <artifact_root>/analysis.",
+    )
+    analyze_dataset.add_argument(
+        "--analysis-id",
+        help="Optional analysis identifier. Defaults to <dataset_id>_phase4a.",
+    )
+    analyze_dataset.add_argument(
+        "--generated-at",
+        help="Optional timestamp override for reproducible analysis tests.",
+    )
+    analyze_dataset.add_argument(
+        "--code-version",
+        help="Optional code version override for archived analysis artifacts.",
+    )
+
     return parser
 
 
@@ -424,6 +455,23 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase3d_review_cli_summary(result), indent=2, sort_keys=True))
         return 0
 
+    if args.command == "analyze-dataset":
+        try:
+            result = analyze_phase4a_dataset(
+                dataset_index_path=Path(args.dataset_index),
+                artifact_root=Path(args.artifact_root) if args.artifact_root else None,
+                analysis_root=Path(args.analysis_root) if args.analysis_root else None,
+                analysis_id=args.analysis_id,
+                generated_at=args.generated_at,
+                code_version=args.code_version,
+            )
+        except ValidationError as exc:
+            print(f"Phase 4A dataset analysis failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase4a_analysis_cli_summary(result), indent=2, sort_keys=True))
+        return 0 if result.analysis_input_manifest["artifact_hash_validation_passed"] else 1
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -527,4 +575,22 @@ def _phase3d_review_cli_summary(result: Phase3DReadinessReviewResult) -> Dict[st
         "dashboard_requirements": str(result.artifacts.dashboard_requirements),
         "results_index_decision": str(result.artifacts.results_index_decision),
         "review_report": str(result.artifacts.review_report),
+    }
+
+
+def _phase4a_analysis_cli_summary(result: Phase4AAnalysisResult) -> Dict[str, object]:
+    return {
+        "dataset_id": result.dataset_id,
+        "experiment_id": result.experiment_id,
+        "row_count": result.metrics_table["row_count"],
+        "included_run_count": result.metrics_table["included_run_count"],
+        "excluded_run_count": result.metrics_table["excluded_run_count"],
+        "artifact_hash_validation_passed": result.analysis_input_manifest[
+            "artifact_hash_validation_passed"
+        ],
+        "analysis_config": str(result.artifacts.analysis_config),
+        "analysis_input_manifest": str(result.artifacts.analysis_input_manifest),
+        "metrics_table_json": str(result.artifacts.metrics_table_json),
+        "metrics_table_csv": str(result.artifacts.metrics_table_csv),
+        "metrics_table_markdown": str(result.artifacts.metrics_table_markdown),
     }
