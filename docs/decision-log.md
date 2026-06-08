@@ -1109,6 +1109,35 @@ Consequences:
 - `analysis_report.md` states that the current dataset supports descriptive interpretation only.
 - Phase 4D completes the initial analysis package without adding a database or dashboard.
 
+### DEC-040: Implement Phase 4E as Static Dashboard and Read-Model Artifacts
+
+Decision ID: DEC-040
+
+Date: 2026-06-08
+
+Status: accepted
+
+Context:
+
+Phase 4A-4D produce the initial dissertation analysis package. Phase 3D still records that the current eight-run dataset is small enough for direct filesystem analysis, so a live database or web dashboard would add surface area without improving the evidence base. However, dissertation review benefits from a compact dashboard-oriented read model that shows how future interactive views would be derived.
+
+Decision:
+
+Implement Phase 4E as a read-only static artifact layer over `metrics_table.json`, Phase 4B component summaries, Phase 4C trajectory diagnostics, Phase 4D failure analysis, and Phase 3D query/decision artifacts. Write `read_model_decision.json`, `results_read_model.json`, `dashboard_data.json`, and `dashboard_snapshot.md`. Do not materialize a database or live dashboard for the current dataset.
+
+Rationale:
+
+This closes the Phase 4 analysis package while preserving the source-of-truth boundary. The dashboard/read-model artifacts make the intended views explicit and reproducible, but they do not replace frozen raw artifacts or derived analysis outputs. Deferring a live dashboard keeps engineering effort aligned with the current dataset scale.
+
+Consequences:
+
+- `write-dashboard-read-model` consumes existing Phase 3D and Phase 4A-4D artifacts.
+- `read_model_decision.json` cites `results_index_decision.json` and Phase 4 query needs.
+- `results_read_model.json` provides run-level rows, component summaries, and indexes for review.
+- `dashboard_data.json` records static view data for the expected dashboard views.
+- `dashboard_snapshot.md` provides a human-readable review artifact.
+- A SQLite read-model database or web dashboard remains a future extension for expanded datasets or repeated interactive review.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

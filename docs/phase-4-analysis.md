@@ -121,6 +121,10 @@ artifacts/
       failure_analysis.md
       dissertation_tables.md
       analysis_report.md
+      read_model_decision.json
+      results_read_model.json
+      dashboard_data.json
+      dashboard_snapshot.md
 ```
 
 The analysis directory is a derived artifact set. It must be reproducible from the frozen dataset and code version, and it must not replace the raw run artifacts.
@@ -407,11 +411,11 @@ env PYTHONPATH=src python3 -m avf write-analysis-report --metrics-table /private
 env PYTHONPATH=src python3 -c "from avf.analysis import write_phase4d_failure_analysis_report; print('phase4d failure analysis import ok')"
 ```
 
-Phase 4D completes the initial artifact-backed analysis package. It does not introduce a results database or dashboard. Phase 4E remains conditional and should begin only if expanded datasets or dissertation review needs require repeated indexed querying or interactive drill-down.
+Phase 4D completes the initial artifact-backed analysis package. It does not introduce a results database or dashboard. Phase 4E adds derived read-model and dashboard artifacts only after the analysis package exists.
 
 ### Phase 4E: Optional Results Read Model and Dashboard
 
-Status: conditional.
+Status: complete.
 
 Goal:
 
@@ -426,7 +430,7 @@ Database work should begin if at least one of the following is true:
 
 If implemented, the database must be a read-only index over frozen artifacts. It must not replace raw artifacts, QA records, the dataset index, or the frozen manifest.
 
-Dashboard work should begin after the analysis table and component summaries exist, because those outputs define the real views needed by the interface.
+Dashboard work should begin after the analysis table and component summaries exist, because those outputs define the real views needed by the interface. For the current dataset, Phase 4E implements a static dashboard/read-model artifact set and does not implement a live database or web dashboard.
 
 Candidate dashboard views:
 
@@ -451,13 +455,39 @@ Suggested branch name:
 phase-4e-analysis-dashboard-read-model
 ```
 
+Implemented outputs:
+
+- `src/avf/analysis/dashboard_read_model.py` implements the Phase 4E dashboard/read-model layer,
+- `write_phase4e_dashboard_read_model` reads the Phase 4A `metrics_table.json`,
+- Phase 4E consumes Phase 4B component effects, Phase 4C trajectory diagnostics, Phase 4D failure analysis, and Phase 3D query/decision artifacts,
+- `read_model_decision.json` cites `results_index_decision.json`, records Phase 4 query needs, and states that no database is materialized for the current dataset,
+- `results_read_model.json` records a compact run-level read model, component summaries, and indexes by component, task, failure class, and diagnostic scope,
+- `dashboard_data.json` records static dashboard view data for dataset overview, component comparison, filters, verification breakdown, trajectory drill-down, failure taxonomy, and artifact integrity,
+- `dashboard_snapshot.md` provides a human-readable dashboard snapshot,
+- source-of-truth policy records that raw frozen artifacts and Phase 4 analysis outputs remain authoritative,
+- `python3 -m avf write-dashboard-read-model` exposes the workflow through the CLI,
+- `scripts/run-phase4e-dashboard-read-model.sh` runs the Phase 4D prerequisite workflow and then writes Phase 4E outputs,
+- tests cover direct generation, CLI execution, source-of-truth policy, and script execution.
+
+Verification:
+
+```text
+python3 -m unittest discover -s tests
+env PYTHONPATH=src python3 -m avf validate-fixtures --root test_data
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4e_script PYTHONPATH=src ./scripts/run-phase4e-dashboard-read-model.sh
+env PYTHONPATH=src python3 -m avf write-dashboard-read-model --metrics-table /private/tmp/avf_phase4e_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4e_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4e_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import write_phase4e_dashboard_read_model; print('phase4e dashboard read model import ok')"
+```
+
+Phase 4E closes the initial Phase 4 package. A live dashboard or SQLite read-model database remains a later extension that should be introduced only if the dataset expands enough to make repeated indexed querying or interactive review materially useful.
+
 ## Recommended Implementation Order
 
 1. Implement Phase 4A to prove frozen dataset ingestion and normalized metrics extraction.
 2. Implement Phase 4B to compute component effects and dissertation tables.
 3. Implement Phase 4C to add trajectory diagnostics from traces.
 4. Implement Phase 4D to consolidate failure analysis and the final analysis report.
-5. Revisit Phase 4E only if artifact volume or review needs justify a read model or dashboard.
+5. Implement Phase 4E as static read-model/dashboard artifacts and keep live database/dashboard work conditional.
 
 This order keeps analysis reproducible before adding presentation infrastructure.
 

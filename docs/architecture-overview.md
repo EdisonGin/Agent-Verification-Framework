@@ -372,6 +372,16 @@ Phase 3D adds the results-index and dashboard readiness boundary:
 
 For the current dataset, the filesystem-backed dataset index remains sufficient. If later scale justifies a database, it must be a read-only index over frozen artifacts rather than a replacement for them.
 
+Phase 4 adds the analysis and dashboard/read-model boundary:
+
+- `analyze-dataset` reads the frozen dataset index and writes normalized metrics and input-manifest artifacts,
+- `summarize-component-effects` computes descriptive component effects and interaction summaries,
+- `diagnose-trajectories` derives trace-level behavior diagnostics from stored `RunTrace` artifacts,
+- `write-analysis-report` consolidates failure taxonomy, QA evidence, and the final analysis report,
+- `write-dashboard-read-model` writes static dashboard/read-model artifacts over the completed analysis package.
+
+Phase 4 remains read-only over frozen raw artifacts. The Phase 4E dashboard/read-model outputs are derived review artifacts and are not the source of truth for dissertation results.
+
 ## Thin-Slice Implementation
 
 The first executable version will include all layers in minimal form:
