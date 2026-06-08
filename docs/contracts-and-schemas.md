@@ -870,6 +870,59 @@ Only included runs with passing artifact hash validation are eligible. Incomplet
 
 For the current dataset, Phase 4B reports descriptive component effects only. Confidence intervals and inferential uncertainty estimates are not reported until additional tasks, seeds, or perturbation schedules create enough matched blocks.
 
+## Phase 4C Trajectory Diagnostic Artifacts
+
+Phase 4C introduces trace-derived trajectory diagnostic artifacts over the Phase 4A metrics table.
+
+The analysis entrypoint is:
+
+```text
+python3 -m avf diagnose-trajectories --metrics-table artifacts/analysis/<dataset_id>/metrics_table.json
+```
+
+Phase 4C writes:
+
+```text
+artifacts/analysis/<dataset_id>/trajectory_diagnostics.json
+artifacts/analysis/<dataset_id>/trajectory_diagnostics.md
+```
+
+`TrajectoryDiagnostics` records:
+
+| Field | Purpose |
+|---|---|
+| `schema_version` | Contract schema version |
+| `analysis_version` | Phase 4C analysis artifact version |
+| `dataset_id` | Frozen dataset analysed |
+| `experiment_id` | Source experiment |
+| `generated_at` | Analysis timestamp |
+| `code_version` | Code version used for trajectory diagnostics |
+| `metrics_table_artifact` | Source Phase 4A metrics table |
+| `heuristic_definitions` | Definitions for action sequence, tool sequence, repeated observations, repetition rate, goal drift, recovery steps, and diagnostic scope |
+| `scope_counts` | Counts of agent-behavior, excluded, unavailable, or artifact/analysis issue rows |
+| `component_summaries` | Component-level trajectory aggregates over agent-behavior rows |
+| `rows` | One diagnostic row per metrics table row |
+| `analysis_acceptance_criteria` | Phase 4C acceptance criteria evidence |
+
+Each trajectory row records:
+
+- run, task, seed, perturbation schedule, component, and trace path,
+- diagnostic scope,
+- action count and action sequence,
+- tool-call count and tool sequence,
+- observation status counts,
+- repeated action, repeated tool-call, and repeated observation counts,
+- trace-derived repetition rate,
+- trace-derived goal drift,
+- recovery event count,
+- final-answer presence,
+- error summary,
+- trace drill-down event IDs.
+
+Repeated tool calls are counted as adjacent same-tool repetitions in the ordered `tool_call` event sequence. Repeated observations are counted as adjacent identical deterministic observation signatures built from observation source, status, and content. This keeps repeat diagnostics deterministic and independent of wall-clock time.
+
+Rows labelled `agent_behavior` are included, hash-validated experiment outcomes. Rows labelled `dataset_excluded`, `trace_unavailable`, or `artifact_or_analysis_issue` are preserved for auditability but should not be interpreted as ordinary agent behavior.
+
 ## Initial Storage Layout
 
 The planned storage layout is:

@@ -220,3 +220,14 @@ env PYTHONPATH=src python3 -c "from avf.analysis import summarize_phase4b_compon
 ```
 
 The Phase 4B command reads `metrics_table.json`, checks matched factorial block completeness, excludes incomplete blocks from contrasts, and writes `component_effects.json`, `component_effects.md`, `interaction_summary.json`, `interaction_summary.md`, and `dissertation_tables.md` under `artifacts/analysis/<dataset_id>/`.
+
+Phase 4C validates trajectory diagnostics:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4c_script PYTHONPATH=src ./scripts/run-phase4c-trajectory-diagnostics.sh
+env PYTHONPATH=src python3 -m avf diagnose-trajectories --metrics-table /private/tmp/avf_phase4c_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4c_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4c_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import diagnose_phase4c_trajectories; print('phase4c trajectory diagnostics import ok')"
+```
+
+The Phase 4C command reads `metrics_table.json`, loads each stored `RunTrace` artifact referenced by the table, derives action/tool/observation/recovery diagnostics, and writes `trajectory_diagnostics.json` and `trajectory_diagnostics.md` under `artifacts/analysis/<dataset_id>/`.

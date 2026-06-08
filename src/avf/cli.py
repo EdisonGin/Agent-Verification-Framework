@@ -11,7 +11,9 @@ from typing import Dict, Iterable, Optional
 from avf.analysis import (
     Phase4AAnalysisResult,
     Phase4BComponentEffectResult,
+    Phase4CTrajectoryDiagnosticResult,
     analyze_phase4a_dataset,
+    diagnose_phase4c_trajectories,
     summarize_phase4b_component_effects,
 )
 from avf.contracts import TaskCase, ValidationError
@@ -317,6 +319,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional code version override for archived component-effect artifacts.",
     )
 
+    diagnose_trajectories = subparsers.add_parser(
+        "diagnose-trajectories",
+        help="Run the Phase 4C trajectory diagnostics over a Phase 4A metrics table.",
+    )
+    diagnose_trajectories.add_argument(
+        "--metrics-table",
+        required=True,
+        help="Path to the Phase 4A metrics_table.json artifact.",
+    )
+    diagnose_trajectories.add_argument(
+        "--analysis-root",
+        help="Directory where Phase 4C analysis artifacts should be written. Defaults to the metrics table analysis root.",
+    )
+    diagnose_trajectories.add_argument(
+        "--generated-at",
+        help="Optional timestamp override for reproducible trajectory diagnostic artifacts.",
+    )
+    diagnose_trajectories.add_argument(
+        "--code-version",
+        help="Optional code version override for archived trajectory diagnostic artifacts.",
+    )
+
     return parser
 
 
@@ -514,6 +538,21 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
         print(json.dumps(_phase4b_effects_cli_summary(result), indent=2, sort_keys=True))
         return 0
 
+    if args.command == "diagnose-trajectories":
+        try:
+            result = diagnose_phase4c_trajectories(
+                metrics_table_path=Path(args.metrics_table),
+                analysis_root=Path(args.analysis_root) if args.analysis_root else None,
+                generated_at=args.generated_at,
+                code_version=args.code_version,
+            )
+        except ValidationError as exc:
+            print(f"Phase 4C trajectory diagnostics failed: {exc}", file=sys.stderr)
+            return 1
+
+        print(json.dumps(_phase4c_trajectory_cli_summary(result), indent=2, sort_keys=True))
+        return 0
+
     parser.error(f"Unknown command: {args.command}")
     return 2
 
@@ -652,4 +691,16 @@ def _phase4b_effects_cli_summary(result: Phase4BComponentEffectResult) -> Dict[s
         "interaction_summary_json": str(result.artifacts.interaction_summary_json),
         "interaction_summary_markdown": str(result.artifacts.interaction_summary_markdown),
         "dissertation_tables": str(result.artifacts.dissertation_tables),
+    }
+
+
+def _phase4c_trajectory_cli_summary(result: Phase4CTrajectoryDiagnosticResult) -> Dict[str, object]:
+    return {
+        "dataset_id": result.dataset_id,
+        "experiment_id": result.experiment_id,
+        "run_count": result.trajectory_diagnostics["run_count"],
+        "diagnostic_row_count": result.trajectory_diagnostics["diagnostic_row_count"],
+        "agent_behavior_row_count": result.trajectory_diagnostics["scope_counts"].get("agent_behavior", 0),
+        "trajectory_diagnostics_json": str(result.artifacts.trajectory_diagnostics_json),
+        "trajectory_diagnostics_markdown": str(result.artifacts.trajectory_diagnostics_markdown),
     }

@@ -32,11 +32,12 @@ Implemented:
 - Phase 3C: dataset freeze index, manifest, and report,
 - Phase 3D: results index and dashboard readiness review,
 - Phase 4A: artifact-backed analysis scaffold and normalized metrics table,
-- Phase 4B: component effect summaries, interaction contrasts, and dissertation table fragments.
+- Phase 4B: component effect summaries, interaction contrasts, and dissertation table fragments,
+- Phase 4C: trace-derived trajectory diagnostics.
 
 Next planned phase:
 
-- Phase 4C: trajectory diagnostics.
+- Phase 4D: failure analysis and final analysis report.
 
 ## Documentation
 
@@ -112,6 +113,12 @@ Run the Phase 4B component effect summaries:
 
 ```text
 ./scripts/run-phase4b-component-effects.sh
+```
+
+Run the Phase 4C trajectory diagnostics:
+
+```text
+./scripts/run-phase4c-trajectory-diagnostics.sh
 ```
 
 ## Package Layout
