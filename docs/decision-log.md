@@ -1081,6 +1081,34 @@ Consequences:
 - Repetition and observation repeat counts are deterministic and wall-clock independent.
 - Phase 4C does not introduce a database or dashboard.
 
+### DEC-039: Separate Infrastructure and Artifact Failures from Task Outcomes in Phase 4D
+
+Decision ID: DEC-039
+
+Date: 2026-06-08
+
+Status: accepted
+
+Context:
+
+Phase 4D consolidates the dissertation-facing analysis report from Phase 4A metrics, Phase 4B component summaries, Phase 4C trajectory diagnostics, and Phase 3 QA artifacts. The report needs a failure taxonomy that preserves evidence about artifact and infrastructure problems without treating those problems as ordinary agent task failures.
+
+Decision:
+
+Implement Phase 4D as a read-only failure-analysis layer over `metrics_table.json`. Classify every run as `passed`, `task_failure`, `verifier_failure`, `artifact_failure`, `infrastructure_failure`, or `dataset_excluded`. Count `passed`, `task_failure`, and `verifier_failure` as ordinary task outcomes only when the run is included and artifact evidence is valid. Preserve `artifact_failure`, `infrastructure_failure`, and `dataset_excluded` rows for auditability but exclude them from ordinary task outcome counts. Require exclusion and rerun decisions to link back to Phase 3 QA artifacts.
+
+Rationale:
+
+Mixing infrastructure or artifact problems into task outcomes would make component comparisons misleading. The dissertation needs both views: task-level outcomes for controlled component interpretation, and audit-level evidence for reproducibility and QA. Linking rerun and exclusion decisions to QA artifacts keeps the dataset curation trail explicit.
+
+Consequences:
+
+- `write-analysis-report` consumes the Phase 4A metrics table plus stored verification, metric, trace, failure-note, rerun, and pilot QA artifacts.
+- `failure_analysis.json` records taxonomy counts, run outcomes, QA decision links, infrastructure separation policy, limitations, and acceptance criteria.
+- `failure_analysis.md` provides the human-readable failure taxonomy report.
+- `analysis_report.md` states that the current dataset supports descriptive interpretation only.
+- Phase 4D completes the initial analysis package without adding a database or dashboard.
+
 ## Open Decisions
 
 ### OPEN-001: Schema Implementation Library

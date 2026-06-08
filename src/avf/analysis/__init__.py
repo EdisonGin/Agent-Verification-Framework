@@ -19,19 +19,29 @@ from .trajectory_diagnostics import (
     Phase4CTrajectoryDiagnosticResult,
     diagnose_phase4c_trajectories,
 )
+from .failure_analysis import (
+    PHASE4D_ANALYSIS_VERSION,
+    Phase4DFailureAnalysisArtifacts,
+    Phase4DFailureAnalysisResult,
+    write_phase4d_failure_analysis_report,
+)
 
 __all__ = [
     "PHASE4A_ANALYSIS_VERSION",
     "PHASE4B_ANALYSIS_VERSION",
     "PHASE4C_ANALYSIS_VERSION",
+    "PHASE4D_ANALYSIS_VERSION",
     "Phase4AAnalysisArtifacts",
     "Phase4AAnalysisResult",
     "Phase4BComponentEffectArtifacts",
     "Phase4BComponentEffectResult",
     "Phase4CTrajectoryDiagnosticArtifacts",
     "Phase4CTrajectoryDiagnosticResult",
+    "Phase4DFailureAnalysisArtifacts",
+    "Phase4DFailureAnalysisResult",
     "analyze_phase4a_dataset",
     "diagnose_phase4c_trajectories",
     "infer_artifact_root",
     "summarize_phase4b_component_effects",
+    "write_phase4d_failure_analysis_report",
 ]

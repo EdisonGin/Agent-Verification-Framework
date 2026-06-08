@@ -231,3 +231,14 @@ env PYTHONPATH=src python3 -c "from avf.analysis import diagnose_phase4c_traject
 ```
 
 The Phase 4C command reads `metrics_table.json`, loads each stored `RunTrace` artifact referenced by the table, derives action/tool/observation/recovery diagnostics, and writes `trajectory_diagnostics.json` and `trajectory_diagnostics.md` under `artifacts/analysis/<dataset_id>/`.
+
+Phase 4D validates failure analysis and the final analysis report:
+
+```text
+python3 -m unittest discover -s tests
+env AVF_ARTIFACT_ROOT=/private/tmp/avf_phase4d_script PYTHONPATH=src ./scripts/run-phase4d-analysis-report.sh
+env PYTHONPATH=src python3 -m avf write-analysis-report --metrics-table /private/tmp/avf_phase4d_script/analysis/phase3_full_factorial_v1_dataset_v1/metrics_table.json --analysis-root /private/tmp/avf_phase4d_script/analysis --generated-at 2026-06-08T00:00:00Z --code-version phase4d_verify
+env PYTHONPATH=src python3 -c "from avf.analysis import write_phase4d_failure_analysis_report; print('phase4d failure analysis import ok')"
+```
+
+The Phase 4D command reads `metrics_table.json`, consumes Phase 3 QA records plus stored verification, metric, and trace artifacts, separates task/verifier failures from artifact or infrastructure failures, links exclusion and rerun decisions back to QA artifacts, and writes `failure_analysis.json`, `failure_analysis.md`, and `analysis_report.md` under `artifacts/analysis/<dataset_id>/`.
